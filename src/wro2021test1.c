@@ -160,45 +160,87 @@ void info(short dom)
 }
 task main()
 {
-	stapt();
-	while (SensorValue[S1]>25)
+	//stapt();
+	//while (SensorValue[S1]>25)
+	//{
+	//	motor[motorB]=v;
+	//}
+	//stopmotor();
+	//while (SensorValue[S1]<65)
+	//{
+	//	motor[motorC]=-v;
+	//}
+	//while(SensorValue[S3]>20)
+	//{
+	//	Line1();
+	//}
+	//nMotorEncoder[motorB]=0;
+	//while (nMotorEncoder[motorB]<250)
+	//{
+	//	motor[motorB]=v;
+	//	motor[motorC]=-v;
+	//}
+	//stopmotor();
+	//nMotorEncoder[motorB]=0;
+	//while(nMotorEncoder[motorB]<260)
+	//{
+	//	motor[motorB]=50;
+	//	motor[motorC]=50;
+	//}
+	//stopmotor();
+	//motor[motorB]=-50;
+	//motor[motorC]=50;
+	//wait10Msec(100);
+	//stopmotor();
+	//info(1);
+	//while(SensorValue[S1]>18)
+	//{
+	//	motor[motorB]=25;
+	//	motor[motorC]=-25;
+	//}
+	//displayCenteredBigTextLine(3, "%d, %d",ind1,ind2);
+	//povleft();
+	motor[motorD]=100;
+	while(SensorValue[S1]>20)
 	{
-		motor[motorB]=v;
+		Line();
 	}
-	stopmotor();
-	while (SensorValue[S1]<65)
-	{
-		motor[motorC]=-v;
-	}
-	while(SensorValue[S3]>20)
-	{
-		Line1();
-	}
+	v=25;
 	nMotorEncoder[motorB]=0;
-	while (nMotorEncoder[motorB]<250)
+	while(nMotorEncoder[motorB]<400)
 	{
-		motor[motorB]=v;
-		motor[motorC]=-v;
+		Line();
 	}
+	v=50;
 	stopmotor();
-	nMotorEncoder[motorB]=0;
-	while(nMotorEncoder[motorB]<260)
+	nMotorEncoder[motorC]=0;
+	while(nMotorEncoder[motorC]>-550)
 	{
-		motor[motorB]=50;
-		motor[motorC]=50;
-	}
-	stopmotor();
-	motor[motorB]=-50;
-	motor[motorC]=50;
-	wait10Msec(100);
-	stopmotor();
-	info(1);
-	while(SensorValue[S1]>18)
-	{
-		motor[motorB]=25;
 		motor[motorC]=-25;
 	}
-	displayCenteredBigTextLine(3, "%d, %d",ind1,ind2);
-	povleft();
-
-}
+	stopmotor();
+	nMotorEncoder[motorB]=0;
+	while(nMotorEncoder[motorB]>-220)
+	{
+		motor[motorB]=-25;
+		motor[motorC]=25;
+	}
+	stopmotor();
+	motor[motorD]=-40;
+	wait10Msec(200);
+	nMotorEncoder[motorB]=0;
+	while(nMotorEncoder[motorB]<500)
+	{
+		motor[motorB]=25;
+		motor[motorC]=25;
+	}
+	stopmotor();
+ 	nMotorEncoder[motorB]=0;
+	while(nMotorEncoder[motorB]<370)
+	{
+		motor[motorB]=20;
+		motor[motorC]=-20;
+	}
+		motor[motorA]=-100;
+		wait10Msec(100);
+	}
