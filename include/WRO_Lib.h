@@ -29,6 +29,15 @@ void Line1()
 	motor[motorC]=(-v+u);
 }
 
+void Line2()
+{
+	e=40-SensorValue[S1];
+	u=k1*e+k2*(e-eold);
+	eold=e;
+	motor[motorB]=(25+u);
+	motor[motorC]=(-25+u);
+}
+
 void stopmotor()
 {
 	motor[motorB]=0;
@@ -130,7 +139,7 @@ void LineCross()
 
 void Line1Cross()
 {
-	while(SensorValue[S3]>20)
+	while(SensorValue[S3]>15)
 	{
 		Line1();
 	}
@@ -151,7 +160,7 @@ void goBlack(short SensorPort)
 {
 	if(SensorPort==1)
 	{
-		while(SensorValue[S1]>15)
+		while(SensorValue[S1]>12)
 		{
 			motor[motorB]=v;
 			motor[motorC]=-v;
@@ -160,7 +169,7 @@ void goBlack(short SensorPort)
 	}
 	if(SensorPort==2)
 	{
-		while(SensorValue[S2]>15)
+		while(SensorValue[S2]>12)
 		{
 			motor[motorB]=v;
 			motor[motorC]=-v;
@@ -169,7 +178,7 @@ void goBlack(short SensorPort)
 	}
 	if(SensorPort==3)
 	{
-		while(SensorValue[S3]>15)
+		while(SensorValue[S3]>12)
 		{
 			motor[motorB]=v;
 			motor[motorC]=-v;
@@ -191,67 +200,117 @@ void goColor()
 	}
 	stopmotor();
 }
-//void info(short dom)
-//{
-//	tHTCS2 colorSensor;
-//	initSensor(&colorSensor, S4);
-//	readSensor(&colorSensor);
-//	while(colorSensor.color!=2&&colorSensor.color!=3&&colorSensor.color!=4&&colorSensor.color!=6)
-//	{
-//		readSensor(&colorSensor);
-//		motor[motorB]=25;
-//		motor[motorC]=-25;
-//	}
-//	stopmotor();
-//	if(dom==1)
-//	{
-//		ind1=colorSensor.color;
-//	}
-//	if(dom==2)
-//	{
-//		ind3=colorSensor.color;
-//	}
-//	if(dom==3)
-//	{
-//		ind5=colorSensor.color;
-//	}
-//	while(colorSensor.color>0)
-//	{
-//		readSensor(&colorSensor);
-//		motor[motorB]=40;
-//		motor[motorC]=-40;
-//	}
-//	stopmotor();
-//	nMotorEncoder[motorB]=0;
-//	while(colorSensor.color!=2&&colorSensor.color!=3&&colorSensor.color!=4&&colorSensor.color!=6)
-//	{
-//		readSensor(&colorSensor);
-//		motor[motorB]=25;
-//		motor[motorC]=-25;
-//		if(nMotorEncoder[motorB]>110)
-//		{
-//			break;
-//		}
-//	}
-//	nMotorEncoder[motorB]=0;
-//	while(nMotorEncoder[motorB]<30)
-//	{
-//		motor[motorB]=20;
-//		motor[motorC]=-20;
-//	}
-//	if(dom==1)
-//	{
-//		ind2=colorSensor.color;
-//	}
-//	if(dom==2)
-//	{
-//		ind4=colorSensor.color;
-//	}
-//	if(dom==3)
-//	{
-//		ind6=colorSensor.color;
-//	}
-//	stopmotor();
-//}
+void moving(float v1, char dir)
+{
+	if(dir=='f')
+	{
+		motor[motorB]=v1;
+		motor[motorC]=-v1;
+	}
+	if(dir=='b')
+	{
+		motor[motorB]=-v1;
+		motor[motorC]=v1;
+	}
+}
+void mot1_enc(short enc, char portMotor, char dir)
+{
+	if (portMotor=='b')
+	{
+		nMotorEncoder[motorB]=0;
+		if(dir=='f')
+		{
+			while(nMotorEncoder[motorB]<enc)
+			{
+				motor[motorB]=v;
+			}
+		}
+		if(dir=='b')
+		{
+			while(nMotorEncoder[motorB]>-enc)
+			{
+				motor[motorB]=-v;
+			}
+		}
+	}
+	if (portMotor=='c')
+	{
+		nMotorEncoder[motorC]=0;
+		if(dir=='f')
+		{
+			while(nMotorEncoder[motorC]>-enc)
+			{
+				motor[motorC]=-v;
+			}
+		}
+		if(dir=='b')
+		{
+			while(nMotorEncoder[motorC]<enc)
+			{
+				motor[motorC]=v;
+			}
+		}
+	}
+	stopmotor();
+}
+void hapuga(char dir)
+{
+	if(dir=='u')
+	{
+		motor[motorA]=25;
+		wait10Msec(90);
+		motor[motorA]=0;
+	}
+	if(dir=='d')
+	{
+		motor[motorA]=-70;
+		wait10Msec(30);
+		motor[motorA]=0;
+	}
+}
+void zahvat(char dir)
+{
+	if(dir=='c')
+	{
+		motor[motorD]=-40;
+		wait10Msec(130);
+		motor[motorD]=0;
+	}
+}
+
+void perebros()
+{
+	v=25; k1=0.15; k2=1.1;
+	Line_enc(300);
+	hapuga('u');
+	move_enc(90, v, 'b');
+	move_enc(100, v, 'r');
+	while (SensorValue[S2]>10)
+	{
+		motor[motorB]=-v;
+		motor[motorC]=-v;
+	}
+	stopmotor();
+	while (SensorValue[S2]<40)
+	{
+		motor[motorB]=-10;
+		motor[motorC]=-10;
+	}
+	stopmotor();
+	move_enc(90, v, 'b');
+	zahvat('c');
+	Line_enc(90);
+	motor[motorD]=40;
+	wait10Msec(120);
+	motor[motorD]=0;
+	move_enc(90, v, 'b');
+	zahvat('c');
+	k1=0.2; k2=1;
+}
+
+
+
+
+
 
 #endif
