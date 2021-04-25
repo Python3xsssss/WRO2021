@@ -6,11 +6,17 @@
 
 #include "hitechnic-colour-v2.h"
 
+#define BLACK 15
+#define WHITE 56
+#define TURN 250
+#define TURNAROUND 500
+#define ONEMOTORTURN 500
 #ifndef TESTLIB_H
 #define TESTLIB_H
-float e,es,eold,v,u,k1,k2; //variables for functions Line and Line1
+float v,k1,k2; //variables for functions Line, Line1 and Line2
 void Line()
 {
+	static float eold, e, es, u;
 	es=SensorValue[S2]-SensorValue[S3];
 	e=SensorValue[S2]-SensorValue[S3]+es;
 	u=k1*es+k2*(e-eold);
@@ -21,6 +27,7 @@ void Line()
 
 void Line1()
 {
+	static float eold, e, es, u;
 	es=SensorValue[S1]-SensorValue[S2];
 	e=SensorValue[S1]-SensorValue[S2]+es;
 	u=k1*es+k2*(e-eold);
@@ -31,6 +38,7 @@ void Line1()
 
 void Line2()
 {
+	static float eold, e, u;
 	e=40-SensorValue[S1];
 	u=k1*e+k2*(e-eold);
 	eold=e;
@@ -55,7 +63,6 @@ void move_enc(float enc, float v1, char dir)
 			motor[motorB]=v1;
 			motor[motorC]=-v1;
 		}
-		stopmotor();
 	}
 	if(dir=='b')
 	{
@@ -125,12 +132,13 @@ void LineRed()
 	{
 		Line();
 	}
+	stopmotor();
 	getColorReflected(S1);
 }
 
 void LineCross()
 {
-	while(SensorValue[S1]>20)
+	while(SensorValue[S1]>BLACK)
 	{
 		Line();
 	}
@@ -139,7 +147,7 @@ void LineCross()
 
 void Line1Cross()
 {
-	while(SensorValue[S3]>15)
+	while(SensorValue[S3]>BLACK)
 	{
 		Line1();
 	}
@@ -160,31 +168,29 @@ void goBlack(short SensorPort)
 {
 	if(SensorPort==1)
 	{
-		while(SensorValue[S1]>12)
+		while(SensorValue[S1]>BLACK)
 		{
 			motor[motorB]=v;
 			motor[motorC]=-v;
 		}
-		stopmotor();
 	}
 	if(SensorPort==2)
 	{
-		while(SensorValue[S2]>12)
+		while(SensorValue[S2]>BLACK)
 		{
 			motor[motorB]=v;
 			motor[motorC]=-v;
 		}
-		stopmotor();
 	}
 	if(SensorPort==3)
 	{
-		while(SensorValue[S3]>12)
+		while(SensorValue[S3]>BLACK)
 		{
 			motor[motorB]=v;
 			motor[motorC]=-v;
 		}
-		stopmotor();
 	}
+	stopmotor();
 }
 
 void goColor()
@@ -258,59 +264,52 @@ void hapuga(char dir)
 	if(dir=='u')
 	{
 		motor[motorA]=25;
-		wait10Msec(90);
-		motor[motorA]=0;
 	}
 	if(dir=='d')
 	{
-		motor[motorA]=-70;
-		wait10Msec(30);
-		motor[motorA]=0;
+		motor[motorA]=-25;
 	}
+	wait10Msec(50);
+	motor[motorA]=0;
 }
 void zahvat(char dir)
 {
 	if(dir=='c')
 	{
-		motor[motorD]=-40;
+		motor[motorD]=40;
 		wait10Msec(130);
 		motor[motorD]=0;
 	}
 }
 
-void perebros()
-{
-	v=25; k1=0.15; k2=1.1;
-	Line_enc(300);
-	hapuga('u');
-	move_enc(90, v, 'b');
-	move_enc(100, v, 'r');
-	while (SensorValue[S2]>10)
-	{
-		motor[motorB]=-v;
-		motor[motorC]=-v;
-	}
-	stopmotor();
-	while (SensorValue[S2]<40)
-	{
-		motor[motorB]=-10;
-		motor[motorC]=-10;
-	}
-	stopmotor();
-	move_enc(90, v, 'b');
-	zahvat('c');
-	Line_enc(90);
-	motor[motorD]=40;
-	wait10Msec(120);
-	motor[motorD]=0;
-	move_enc(90, v, 'b');
-	zahvat('c');
-	k1=0.2; k2=1;
-}
-
-
-
-
-
+//void perebros()
+//{
+//	v=25; k1=0.15; k2=1.1;
+//	Line_enc(300);
+//	hapuga('u');
+//	move_enc(90, v, 'b');
+//	move_enc(100, v, 'r');
+//	while (SensorValue[S2]>10)
+//	{
+//		motor[motorB]=-v;
+//		motor[motorC]=-v;
+//	}
+//	stopmotor();
+//	while (SensorValue[S2]<40)
+//	{
+//		motor[motorB]=-10;
+//		motor[motorC]=-10;
+//	}
+//	stopmotor();
+//	move_enc(90, v, 'b');
+//	zahvat('c');
+//	Line_enc(90);
+//	motor[motorD]=40;
+//	wait10Msec(120);
+//	motor[motorD]=0;
+//	move_enc(90, v, 'b');
+//	zahvat('c');
+//	k1=0.2; k2=1;
+//}
 
 #endif
