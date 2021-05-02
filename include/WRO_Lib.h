@@ -7,7 +7,7 @@
 #include "hitechnic-colour-v2.h"
 
 #define BLACK 15
-#define WHITE 56
+#define WHITE 60
 #define TURN 250
 #define TURNAROUND 500
 #define ONEMOTORTURN 500
@@ -50,7 +50,7 @@ void stopmotor()
 {
 	motor[motorB]=0;
 	motor[motorC]=0;
-	wait10Msec(10);
+	wait10Msec(50);
 }
 
 void move_enc(float enc, float v1, char dir)
@@ -93,7 +93,7 @@ void move_enc(float enc, float v1, char dir)
 
 void povright()
 {
-	move_enc(70, v, 'f');
+	move_enc(75, v, 'f');//70
 	move_enc(100, v, 'r');
 	while (SensorValue[S2]>10)
 	{
@@ -110,7 +110,7 @@ void povright()
 
 void povleft()
 {
-	move_enc(70, v, 'f');
+	move_enc(75, v, 'f');//70
 	move_enc(100, v, 'l');
 	while (SensorValue[S3]>20)
 	{
@@ -280,36 +280,25 @@ void zahvat(char dir)
 		wait10Msec(130);
 		motor[motorD]=0;
 	}
+	if(dir=='o')
+	{
+		motor[motorD]=-40;
+		wait10Msec(60);
+		motor[motorD]=0;
+	}
 }
 
-//void perebros()
-//{
-//	v=25; k1=0.15; k2=1.1;
-//	Line_enc(300);
-//	hapuga('u');
-//	move_enc(90, v, 'b');
-//	move_enc(100, v, 'r');
-//	while (SensorValue[S2]>10)
-//	{
-//		motor[motorB]=-v;
-//		motor[motorC]=-v;
-//	}
-//	stopmotor();
-//	while (SensorValue[S2]<40)
-//	{
-//		motor[motorB]=-10;
-//		motor[motorC]=-10;
-//	}
-//	stopmotor();
-//	move_enc(90, v, 'b');
-//	zahvat('c');
-//	Line_enc(90);
-//	motor[motorD]=40;
-//	wait10Msec(120);
-//	motor[motorD]=0;
-//	move_enc(90, v, 'b');
-//	zahvat('c');
-//	k1=0.2; k2=1;
-//}
+void perebros()
+{
+	hapuga('u');
+	move_enc(200,v,'b');
+	move_enc(500,v,'l');
+	move_enc(200,v,'b');
+	zahvat('c');
+	move_enc(150,v,'f');
+	zahvat('o');
+	move_enc(180,v,'b');
+	zahvat('c');
+}
 
 #endif

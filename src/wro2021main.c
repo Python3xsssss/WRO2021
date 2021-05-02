@@ -37,24 +37,24 @@ void otvoz(short dom, short col)
 			hapuga('u');
 			LineRed();
 			move_enc(200, v, 'b');
-			povleft();
+			move_enc(TURNAROUND, v, 'r');
 			LineCross();
 		}
 		else
 		{
 			para=para+1;
-			if(para%2==0)
+			if(para%2==1)
 			{
 				hapuga('u');
 				move_enc(200, v, 'b');
-				povleft();
+				move_enc(TURNAROUND, v, 'r');
 				LineCross();
 			}
 			else
 			{
 				hapuga('d');
 				move_enc(200, v, 'b');
-				povleft();
+				move_enc(TURNAROUND, v, 'r');
 				LineCross();
 			}
 		}
@@ -66,29 +66,21 @@ void otvoz(short dom, short col)
 			if(domcolor1!=col&&domcolor2!=col)
 			{
 				move_enc(200,v,'b');
-				povleft();
+				move_enc(TURNAROUND, v, 'r');
 				move_enc(150,v,'b');
-				motor[motorD]=-20;
-				wait10Msec(50);
-				motor[motorD]=0;
+				zahvat('o');
 				LineCross();
 			}
 			else
 			{
-				motor[motorA]=20;
-				wait10Msec(35);
+				hapuga('u');
 				move_enc(200,v,'b');
-				povleft();
-				motor[motorA]=-20;
-				wait10Msec(35);
+				move_enc(TURNAROUND, v, 'r');
+				hapuga('d');
 				move_enc(150,v,'b');
-				motor[motorA]=20;
-				motor[motorD]=-20;
-				wait10Msec(35);
+				zahvat('o');
 				LineCross();
-				motor[motorA]=-20;
-				wait10Msec(35);
-				motor[motorA]=0;
+				hapuga('u');
 			}
 		}
 		else
@@ -96,30 +88,22 @@ void otvoz(short dom, short col)
 			if(domcolor1!=col||domcolor2!=col)
 			{
 				move_enc(200,v,'b');
-				povleft();
+				move_enc(TURNAROUND, v, 'r');
 				move_enc(150,v,'b');
-				motor[motorD]=-20;
-				wait10Msec(50);
-				motor[motorD]=0;
+				zahvat('o');
 				LineCross();
 				para++;
 			}
 			else
 			{
-				motor[motorA]=20;
-				wait10Msec(35);
+				hapuga('u');
 				move_enc(200,v,'b');
-				povleft();
-				motor[motorA]=-20;
-				wait10Msec(35);
+				move_enc(TURNAROUND, v, 'r');
+				hapuga('d');
 				move_enc(150,v,'b');
-				motor[motorA]=20;
-				motor[motorD]=-20;
-				wait10Msec(35);
+				zahvat('o');
 				LineCross();
-				motor[motorA]=-20;
-				wait10Msec(35);
-				motor[motorA]=0;
+				hapuga('u');
 				para=para+2;
 			}
 		}
@@ -248,7 +232,7 @@ void CheckDom1()
 	wait10Msec(100);
 	stopmotor();
 	info(1);
-	motor[motorD]=25;
+	zahvat('o');
 	v=25;
 	goBlack(1);
 	wait10Msec(20);
@@ -271,7 +255,7 @@ void excess()
 	{
 		readSensor(&colorSensor);
 		Line();
-		if(nMotorEncoder[motorB]>400)
+		if(nMotorEncoder[motorB]>550)
 		{
 			t=3;
 			break;
@@ -288,19 +272,30 @@ void excess()
 		mot1_enc(550, 'b', 'b');
 		move_enc(420, 30, 'f');
 		hapuga('d');
-		move_enc(TURNAROUND, 40, 'l');
-		move_enc(130, 20, 'b');
+		move_enc(70, 30, 'b');
+		move_enc(TURNAROUND-10, 25, 'l');
+		move_enc(260, 18, 'b');
+		wait10Msec(10);
 		zahvat('c');
-		v=50;
 		move_enc(TURN, v, 'l');
+		v=50;
 		goBlack(1);
-		move_enc(50, v, 'f');
+		playSound(soundBlip);
+		move_enc(400, v, 'f');
+		playSound(soundBlip);
+		while(SensorValue[S2]<WHITE)
+		{
+			moving(v, 'f');
+		}
+		stopmotor();
+		playSound(soundBlip);
 		goBlack(1);
+		v=25;
 		povleft();
 	}
 	else
 	{
-		move_enc(250, v, 'b');
+		move_enc(400, v, 'b');
 		povleft();
 		LineCross();
 		v=25;
@@ -326,8 +321,9 @@ void excess()
 			move_enc(270, 40, 'r');
 			move_enc(180, 30, 'f');
 			hapuga('d');
+			move_enc(70, 30, 'b');
 			move_enc(TURNAROUND, 40, 'l');
-			move_enc(130, 20, 'b');
+			move_enc(200, 20, 'b');
 			zahvat('c');
 			move_enc(TURNAROUND, v, 'l');
 			goBlack(3);
@@ -335,40 +331,17 @@ void excess()
 		}
 		if(t==2)
 		{
-			while(SensorValue[S1]>15)
+			while(SensorValue[S1]>BLACK)
 			{
 				moving(v, 'b');
 			}
 			povright();
 			LineCross();
-			//while(SensorValue[S2]>20)
-			//{
-			//	motor[motorB]=-v;
-			//}
-			//while(SensorValue[S2]<50)
-			//{
-			//	motor[motorB]=-v;
-			//}
-			//while(SensorValue[S2]>17)
-			//{
-			//	motor[motorB]=-v;
-			//}
-			//while(SensorValue[S2]<50)
-			//{
-			//	motor[motorB]=-v;
-			//}
-			//stopmotor();
-			//wait10Msec(10);
-			//while(SensorValue[S3]>20)
-			//{
-			//	motor[motorC]=-v;
-			//}
-			//stopmotor();
 			mot1_enc(ONEMOTORTURN, 'b', 'b');
-			move_enc(TURN, 25, 'b');
+			move_enc(255, 25, 'b');
 			zahvat('c');
 			move_enc(TURNAROUND, v, 'l');
-			move_enc(240, 25, 'f');
+			move_enc(265, 25, 'f');
 			wait1Msec(50);
 			hapuga('d');
 			move_enc(TURN, v, 'l');
@@ -383,18 +356,18 @@ void CheckDom2()
 	//v=40;
 	LineRed();
 	stopmotor();
-	move_enc(110, v, 'b');
+	move_enc(145, v, 'b');
 	move_enc(TURN, 30, 'l');
 	move_enc(450, v, 'b');
 	info(2);
 	goBlack(3);
 	povleft();
+	Line_enc(200);
 }
 
 void akkum1()
 {
 	v=25;
-	Line_enc(200);
 	//v=50;
 	while(SensorValue[S2]>15||SensorValue[S3]>15)
 	{
@@ -403,9 +376,7 @@ void akkum1()
 	stopmotor();
 	move_enc(TURNAROUND, 30, 'l');
 	move_enc(115, 35, 'b');
-	motor[motorD]=70;
-	wait10Msec(95);
-	motor[motorD]=0;
+	zahvat('o');
 	goBlack(2);
 	wait10Msec(500);
 	//move_enc(20, v, 'f');
@@ -418,13 +389,15 @@ void akkum1()
 
 void CheckDom3()
 {
-	//perebros();
+	Line_enc(150);
+	perebros();
+	move_enc(TURNAROUND, v, 'l');
 	LineCross();
 	wait10Msec(40);
 	povright();
 	LineRed();
 	stopmotor();
-	move_enc(110, v, 'b');
+	move_enc(145, v, 'b');
 	move_enc(TURN, 30, 'l');
 	move_enc(450, v, 'b');
 	info(3);
@@ -577,11 +550,11 @@ void putblue()
 
 void akkum2()
 {
-	para=para+1;
 	LineCross();
 	move_enc(100,v,'f');
 	hapuga('d');
 	move_enc(100,v,'b');
+	hapuga('u');
 }
 
 void RazvozBlue()
@@ -874,6 +847,9 @@ void RazvozGreen()
 		Line1Cross();
 		if(green==1)
 		{
+			povleft();
+			Line_enc(300);
+			povright();
 			akkum2();
 			if(ind3==4||ind4==4)
 			{
@@ -946,31 +922,210 @@ void RazvozYellow()
 	if(ind3==6||ind4==6)
 	{
 		move_enc(TURN, v, 'r');
+		hapuga('u');
 		goBlack(3);
 		povleft();
-
+		otvoz(2, 6);
+		if(yellow==1)
+		{
+			akkum2();
+			povright();
+			LineCross();
+			povright();
+		}
+		if(ind1==6||ind2==6)
+		{
+			povright();
+			LineCross();
+			Line_enc(300);
+			mot1_enc(200, 'b', 'f');
+			mot1_enc(180, 'c', 'f');
+			Line1Cross();
+			povleft();
+			otvoz(1, 6);
+			povright();
+			Line_enc(150);
+			mot1_enc(200, 'b', 'f');
+			mot1_enc(180, 'c', 'f');
+			Line1Cross();
+			povleft();
+		}
+		if(ind5==6||ind6==6)
+		{
+			povleft();
+			LineCross();
+			povright();
+			otvoz(3, 6);
+			povleft();
+			LineCross();
+			Line_enc(300);
+			LineCross();
+			povright();
+		}
+		if(ind3==6&&ind4==6)
+		{
+			povright();
+			LineCross();
+			povright();
+		}
 	}
 	else
 	{
 		move_enc(TURNAROUND, v, 'l');
+		hapuga('u');
 		goBlack(3);
-
+		if(yellow==1)
+		{
+			povleft();
+			mot1_enc(200, 'b', 'f');
+			mot1_enc(180, 'c', 'f');
+			Line1Cross();
+			povleft();
+			Line_enc(300);
+			povleft();
+			akkum2();
+			if(ind5==6||ind6==6)
+			{
+				povleft();
+				LineCross();
+				povright();
+				otvoz(3, 6);
+				povleft();
+				LineCross();
+				Line_enc(300);
+				LineCross();
+				povright();
+			}
+			else
+			{
+				povright();
+				LineCross();
+				Line_enc(300);
+				mot1_enc(200, 'b', 'f');
+				mot1_enc(180, 'c', 'f');
+				Line1Cross();
+				povleft();
+				otvoz(1, 6);
+				povright();
+				Line_enc(150);
+				mot1_enc(200, 'b', 'f');
+				mot1_enc(180, 'c', 'f');
+				Line1Cross();
+				povleft();
+			}
+		}
+		else
+		{
+			if(ind5==6||ind6==6)
+			{
+				povleft();
+				LineCross();
+				povright();
+				otvoz(3, 6);
+				povleft();
+				if(ind1==6||ind2==6)
+				{
+					LineCross();
+					Line_enc(300);
+					mot1_enc(200, 'b', 'f');
+					mot1_enc(180, 'c', 'f');
+					Line1Cross();
+					povleft();
+					otvoz(1, 6);
+					povright();
+					Line_enc(150);
+					mot1_enc(200, 'b', 'f');
+					mot1_enc(180, 'c', 'f');
+					Line1Cross();
+					povleft();
+				}
+				else
+				{
+					LineCross();
+					Line_enc(300);
+					LineCross();
+					povright();
+				}
+			}
+			else
+			{
+				povright();
+				LineCross();
+				Line_enc(300);
+				mot1_enc(200, 'b', 'f');
+				mot1_enc(180, 'c', 'f');
+				Line1Cross();
+				povleft();
+				otvoz(1, 6);
+				povright();
+				Line_enc(150);
+				mot1_enc(200, 'b', 'f');
+				mot1_enc(180, 'c', 'f');
+				Line1Cross();
+				povleft();
+			}
+		}
 	}
 }
 
+void batarei()
+{
+	LineCross();
+	povright();
+	Line_enc(250);
+	move_enc(TURN,v,'l');
+	move_enc(200,v,'f');
+	hapuga('d');
+	move_enc(TURN,v,'l');
+	move_enc(100,v,'b');
+	hapuga('u');
+	move_enc(200,v,'b');
+	move_enc(TURN,v,'l');
+	while (SensorValue[S1]<WHITE)
+	{
+		motor[motorB]=v;
+		motor[motorC]=-v;
+	}
+	while (SensorValue[S1]>BLACK+20)
+	{
+		motor[motorB]=v;
+		motor[motorC]=-v;
+	}
+	move_enc(20, v, 'f');
+	povright();
+	while(SensorValue[S3]<WHITE)
+	{
+		Line1();
+	}
+	while(SensorValue[S3]>BLACK+20)
+	{
+		Line1();
+	}
+	move_enc(200,v,'f');
+	move_enc(TURN,v,'r');
+	move_enc(333,v,'f');
+	hapuga('d');
+	move_enc(TURN,v,'r');
+	move_enc(135,v,'b');
+	hapuga('u');
+	move_enc(270,v,'b');
+}
+
+
 task main()
 {
-	v=25; k1=0.2; k2=10; ind1=2; ind2=6; ind3=4; ind4=0; ind5=4; ind6=2; blue=2; green=2;
+	v=25; k1=0.2; k2=10;
 	motor[motorD]=0;
-	//stapt();
-	//CheckDom1();
-	//excess();
-	//CheckDom2();
-	//akkum1();
-	//CheckDom3();
+	stapt();
+	CheckDom1();
+	excess();
+	CheckDom2();
+	akkum1();
+	CheckDom3();
 	//putblue();
 	//RazvozBlue();
 	//putgreen();
 	//RazvozGreen();
 	//putyellow();
+	//batarei();
 }
