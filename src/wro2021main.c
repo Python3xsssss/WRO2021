@@ -1,4 +1,6 @@
 #include "WRO_Lib.h"
+#include "Check.h"
+
 float t; //excess's color
 float ind1,ind2,ind3,ind4,ind5,ind6,blue,green,yellow,para; //variables for function info
 short polozhenie=2; //var for void putgreen
@@ -221,30 +223,7 @@ void info(short dom)
 	}
 }
 
-void CheckDom1()
-{
-	motor[motorD]=-25;
-	move_enc(250, v, 'f');
-	move_enc(260, 50, 'l');
-	motor[motorD]=0;
-	motor[motorB]=-40;
-	motor[motorC]=40;
-	wait10Msec(100);
-	stopmotor();
-	info(1);
-	zahvat('o');
-	v=25;
-	goBlack(1);
-	wait10Msec(20);
-	povleft();
-	motor[motorD]=0;
-	LineCross();
-	povright();
-	Line_enc(300);
-	povright();
-}
-
-void excess()
+void CheckExcess()
 {
 	nMotorEncoder[motorB]=0;
 	tHTCS2 colorSensor;
@@ -1075,21 +1054,37 @@ void batarei()
 	move_enc(270,v,'b');
 }
 
-
-task main()
+void CheckAllField()
 {
-	v=25; k1=0.2; k2=10;
-	motor[motorD]=0;
-	stapt();
 	CheckDom1();
-	excess();
+	CheckExcess();
 	CheckDom2();
 	akkum1();
 	CheckDom3();
-	//putblue();
-	//RazvozBlue();
-	//putgreen();
-	//RazvozGreen();
-	//putyellow();
-	//batarei();
+}
+
+void StackAllBricks()
+{
+	putblue();
+	RazvozBlue();
+	putgreen();
+	RazvozGreen();
+	putyellow();
+}
+
+void Init()
+{
+	v=25;
+	k1=0.2;
+	k2=10;
+}
+
+task main()
+{
+	Init();
+	stapt();
+	CheckAllField();
+	StackAllBricks();
+	batarei();
+	//finish(!!!NE NAPISANO!!!);
 }
