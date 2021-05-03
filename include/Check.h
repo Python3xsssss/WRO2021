@@ -3,6 +3,11 @@
 #ifndef CHECK_H
 #define CHECK_H
 
+#define ENC_DOM1_1 160
+#define ENC_DOM1_2 90
+#define ENC_DOM23_1 100
+#define ENC_DOM23_2 100
+
 short indDoms[3][2] = {{-1, -1}, {-1, -1}, {-1, -1}}; // indDoms[0][0] - color index of first indicator in first dom
 short nInds[3] = {0, 0, 0}; // nInds[0] - num of blue indicators, etc.
 short exColor;
@@ -27,11 +32,20 @@ int check_color()
 	}
 }
 
-void check_ind(short dom)
+void check_ind(short dom, short nEnc1, short nEnc2)
 {
 	for (int i = 0; i < 2; i++)
 	{
-		pass_color(120, v); //
+		short enc = (i == 0) ? nEnc1 : nEnc2;
+		if(dom == 0)
+		{
+			pass_color(enc, v);
+		}
+		else
+		{
+			back_pass_color(enc, v);
+		}
+
 		short color_index = check_color();
 		if (color_index != -1)
 		{
@@ -41,6 +55,11 @@ void check_ind(short dom)
 	}
 }
 
+task grip()
+{
+	zahvat('o');
+}
+
 void checkDom1()
 {
 	motor[motorD]=-25;
@@ -48,12 +67,13 @@ void checkDom1()
 	move_enc(260, 50, 'l', "stop");
 	motor[motorD]=0;
 
-	moving(40, 'f');
+	moving(40, 'b');
 	wait10Msec(100);
 	stopmotor();
 
-	check_ind(1);
-	zahvat('o');
+	check_ind(0, ENC_DOM1_1, ENC_DOM1_2);
+
+	startTask(grip);
 
 	v=25;
 	fwd_black(1, v, "");
@@ -65,13 +85,19 @@ void checkDom1()
 
 void take_yellow_ex()
 {
+	/*
+	move_enc(80, v, 'b', "stop");
 	mot1_enc(200, 'b', v, 'f', "stop");
 	mot1_enc(180, 'c', v, 'f', "stop");
-	move_enc(100, v, 'b', "stop");
+
 	Line1Cross(v, "");
 	Line_enc(20, v, "stop");
 	mot1_enc(550, 'b', v, 'b', "stop");
-	move_enc(420, v, 'f', "stop");
+	line_correction(15, "stop");
+	wait1Msec(2000);
+	*/
+	move_enc(TURN, v, 'r', "stop");
+	move_enc(255, v, 'f', "stop");
 	hapuga('d');
 	move_enc(70, v, 'b', "stop");
 	move_enc(TURNAROUND-10, 25, 'l', "stop");
@@ -84,7 +110,7 @@ void take_yellow_ex()
 	fwd_black(1, v, "");
 	move_enc(400, v, 'f', "");
 
-	fwd_white(2, v, "stop");
+	fwd_white(2, v, "");
 	fwd_black(1, v, "");
 	v=25;
 	povleft(v, "cross");
@@ -122,27 +148,29 @@ void take_blue_ex()
 
 void checkExcess()
 {
-	Line_enc(300, v, "stop");
+	Line_enc(400, v, "stop");
 	povright(v, "");
-
 	nMotorEncoder[motorB] = 0;
 	readSensor(&colorSensor);
 	exColor = 2;
-	if (!pass_any(550, v))
+	if (!pass_any(450, v))
 	{
 		exColor -= 1;
 	}
 	stopmotor();
-
+	writeDebugStreamLine("%d", nMotorEncoder[motorB]);
 	if(exColor == 2)
 	{
+		if(nMotorEncoder[motorB]>300)
+		{
+			move_enc(nMotorEncoder[motorB]-250, v, 'b', "");
+		}
 		take_yellow_ex();
 		return;
 	}
 
 	v=40;
-	move_enc(250, v, 'b', "stop");
-	povleft(v, "");
+	povright(v, "");
 	LineCross(v, "");
 	v=25;
 	Line_enc(30, v, "stop");
@@ -175,28 +203,26 @@ void checkDom2()
 {
 	//v=40;
 	LineRed(v, "stop");
-	move_enc(160, v, 'b', "stop");
-	move_enc(TURN, 30, 'l', "stop");
-	move_enc(450, v, 'b', "stop");
-	check_ind(2);
-	fwd_black(3, v, "stop");
+	mot1_enc(ONEMOTORTURN, 'c', v, 'b', "stop");
+	check_ind(1, ENC_DOM23_1, ENC_DOM23_2);
+	fwd_black(3, v, "");
 	povleft(v, "cross");
-	Line_enc(200, v, "");
-}
+	while(SensorValue[S2]>15||SensorValue[S3]>15)
+	{
+		Line(v);
+	}
+	stopmotor();}
 
 void akkum_std()
 {
 	v=25;
 	//v=50;
-	while(SensorValue[S2]>15||SensorValue[S3]>15)
-	{
-		Line(v);
-	}
-	stopmotor();
+	move_enc(CROSS_ENC, v, 'f', "stop");
 	move_enc(TURNAROUND, v, 'l', "stop");
-	move_enc(115, v, 'b', "stop");
+	move_enc(100, 15, 'b', "stop");
 	zahvat('o');
 	fwd_black(2, v, "stop");
+	wait10Msec(200);
 	//move_enc(20, v, 'f');
 	povright(v, "cross");
 }
@@ -209,10 +235,8 @@ void checkDom3()
 	LineCross(v, "stop");
 	povright(v, "cross");
 	LineRed(v, "stop");
-	move_enc(160, v, 'b', "stop");
-	move_enc(TURN, v, 'l', "stop");
-	move_enc(450, v, 'b', "stop");
-	check_ind(3);
+	mot1_enc(ONEMOTORTURN, 'c', v, 'b', "stop");
+	check_ind(2, ENC_DOM23_1, ENC_DOM23_2);
 	fwd_black(2, v, "stop");
 }
 

@@ -1,8 +1,14 @@
+#pragma config(Sensor, S1,     ,               sensorEV3_Color)
+#pragma config(Sensor, S2,     rightSensor,    sensorEV3_Color)
+#pragma config(Sensor, S3,     leftSensor,     sensorEV3_Color)
+#pragma config(Motor,  motorB,          rightMotor,    tmotorEV3_Medium, PIDControl, encoder)
+#pragma config(Motor,  motorC,          leftMotor,     tmotorEV3_Medium, PIDControl, encoder)
+
 #include "WRO_Lib.h"
 #include "Check.h"
 //#include "Allocate.h"
 
-void Init()
+void init()
 {
 	v=25;
 	k1=0.2;
@@ -62,10 +68,15 @@ void batarei()
 
 task main()
 {
-	Init();
+	clearDebugStream();
+	init();
 	stapt();
 	checkAllField();
 	//AllocateAllBricks();
 	//batarei();
 	//finish(!!!NE NAPISANO!!!);
+	//writeDebugStreamLine("%d, %d", indDoms[0][0], indDoms[0][1]);
+	//writeDebugStreamLine("%d, %d", indDoms[1][0], indDoms[1][1]);
+	//writeDebugStreamLine("%d, %d", indDoms[2][0], indDoms[2][1]);
+	//wait10Msec(1000);
 }
