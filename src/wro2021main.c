@@ -356,7 +356,7 @@ void CheckDom2()
 	//v=40;
 	LineRed();
 	stopmotor();
-	move_enc(145, v, 'b');
+	move_enc(160, v, 'b');
 	move_enc(TURN, 30, 'l');
 	move_enc(450, v, 'b');
 	info(2);
@@ -397,7 +397,7 @@ void CheckDom3()
 	povright();
 	LineRed();
 	stopmotor();
-	move_enc(145, v, 'b');
+	move_enc(160, v, 'b');
 	move_enc(TURN, 30, 'l');
 	move_enc(450, v, 'b');
 	info(3);
@@ -476,24 +476,11 @@ void putblue()
 	motor[motorA]=20;
 	wait10Msec(50);
 	motor[motorA]=0;
-	mot1_enc(TURNAROUND, 'b', 'b');
-	//nMotorEncoder[motorB]=0;
-	//while(nMotorEncoder[motorB]>-500)
-	//{
-	//	motor[motorB]=-v;
-	//}
-	//stopmotor();
+	mot1_enc(ONEMOTORTURN, 'b', 'b');
 	motor[motorA]=-20;
 	wait10Msec(50);
 	motor[motorA]=0;
 	move_enc(150, v, 'b');
-	//nMotorEncoder[motorB]=0;
-	//while(nMotorEncoder[motorB]>-150)
-	//{
-	//	motor[motorB]=-v;
-	//	motor[motorC]=v;
-	//}
-	//stopmotor();
 	motor[motorA]=20;
 	wait10Msec(50);
 	motor[motorA]=0;
@@ -504,26 +491,9 @@ void putblue()
 	}
 	motor[motorA]=-20;
 	goBlack(3);
-	//while(SensorValue[S3]>30)
-	//{
-	//	motor[motorB]=v;
-	//	motor[motorC]=-v;
-	//}
 	move_enc(230, v, 'f');
-	//nMotorEncoder[motorB]=0;
-	//while(nMotorEncoder[motorB]<230)
-	//{
-	//	motor[motorB]=v;
-	//	motor[motorC]=-v;
-	//}
 	motor[motorA]=0;
 	move_enc(230, v, 'l');
-	//nMotorEncoder[motorB]=0;
-	//while(nMotorEncoder[motorB]<230)
-	//{
-	//	motor[motorB]=v;
-	//	motor[motorC]=v;
-	//}
 	while(SensorValue[S1]<WHITE)
 	{
 		motor[motorB]=v;
@@ -539,13 +509,7 @@ void putblue()
 	motor[motorA]=20;
 	wait10Msec(35);
 	motor[motorA]=0;
-	mot1_enc(500, 'b', 'b');
-	//nMotorEncoder[motorB]=0;
-	//while(nMotorEncoder[motorB]>-500)
-	//{
-	//	motor[motorB]=-v;
-	//}
-	//stopmotor();
+	mot1_enc(ONEMOTORTURN, 'b', 'b');
 }
 
 void akkum2()

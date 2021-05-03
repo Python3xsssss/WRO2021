@@ -276,8 +276,8 @@ void zahvat(char dir)
 {
 	if(dir=='c')
 	{
-		motor[motorD]=40;
-		wait10Msec(130);
+		motor[motorD]=30;
+		wait10Msec(140);
 		motor[motorD]=0;
 	}
 	if(dir=='o')
