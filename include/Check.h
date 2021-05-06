@@ -8,10 +8,6 @@
 #define ENC_DOM23_1 100
 #define ENC_DOM23_2 100
 
-short indDoms[3][2] = {{-1, -1}, {-1, -1}, {-1, -1}}; // indDoms[0][0] - color index of first indicator in first dom
-short nInds[3] = {0, 0, 0}; // nInds[0] - num of blue indicators, etc.
-short exColor;
-
 int check_color()
 {
 	if (colorSensor.color==2 || colorSensor.color==3)
@@ -211,20 +207,7 @@ void checkDom2()
 	{
 		Line(v);
 	}
-	stopmotor();}
-
-void akkum_std()
-{
-	v=25;
-	//v=50;
-	move_enc(CROSS_ENC, v, 'f', "stop");
-	move_enc(TURNAROUND, v, 'l', "stop");
-	move_enc(100, 15, 'b', "stop");
-	zahvat('o');
-	fwd_black(2, v, "stop");
-	wait10Msec(200);
-	//move_enc(20, v, 'f');
-	povright(v, "cross");
+	stopmotor();
 }
 
 void checkDom3()

@@ -14,11 +14,18 @@
 #define CROSS_ENC 70
 
 short v;
+short orientation, location;
+short sensors;
+short indDoms[3][2] = {{0,2}, {1,2}, {-1,1}}; // indDoms[0][0] - color index of first indicator in first dom
+short nInds[3] = {1, 2, 2}; // nInds[0] - num of blue indicators, etc.
+short bricksInRobot[4] = {2, 2, 1, 1}; // bricksInRobot[0] - color index of bricks in hapuga, [1] - on hapuga, [2] - in zahvat, [3] - on zahvat
+short exColor;
 float k1, k2;
 tHTCS2 colorSensor;
 
 void Line(short speed)
 {
+	sensors = 0;
 	static short eold, e, es, u;
 	es = SensorValue[S2] - SensorValue[S3];
 	e = SensorValue[S2] - SensorValue[S3]+es;
@@ -30,6 +37,7 @@ void Line(short speed)
 
 void Line1(short speed)
 {
+	sensors = 1;
 	static short eold, e, es, u;
 	es=SensorValue[S1]-SensorValue[S2];
 	e=SensorValue[S1]-SensorValue[S2]+es;
@@ -46,7 +54,7 @@ void Line2(short speed)
 	u=k1*e+k2*(e-eold);
 	eold=e;
 	motor[motorB]=(speed + u);
-	motor[motorC]=(- speed + u);
+	motor[motorC]=(-speed + u);
 }
 
 void stopmotor()
@@ -70,13 +78,13 @@ void moving(short speed, char dir)
 	}
 	if(dir=='l')
 	{
-			motor[motorB]=speed;
-			motor[motorC]=speed;
+		motor[motorB]=speed;
+		motor[motorC]=speed;
 	}
 	if(dir=='r')
 	{
-			motor[motorB]=-speed;
-			motor[motorC]=-speed;
+		motor[motorB]=-speed;
+		motor[motorC]=-speed;
 	}
 }
 
@@ -207,6 +215,19 @@ void Line_enc(float enc2, short speed, const string ifStop)
 	while(nMotorEncoder[motorB]<enc2)
 	{
 		Line(speed);
+	}
+	if (ifStop == "stop" || ifStop == "Stop" || ifStop == "STOP")
+	{
+		stopmotor();
+	}
+}
+
+void Line1_enc(float enc2, short speed, const string ifStop)
+{
+	nMotorEncoder[motorB]=0;
+	while(nMotorEncoder[motorB]<enc2)
+	{
+		Line1(speed);
 	}
 	if (ifStop == "stop" || ifStop == "Stop" || ifStop == "STOP")
 	{
@@ -373,6 +394,22 @@ void mot1_enc(short enc, char portMotor, short speed, char dir, const string ifS
 	}
 }
 
+void lineToLine()
+{
+	if(sensors == 0)
+	{
+		mot1_enc(200, 'b', v, 'f', "stop");
+		mot1_enc(200, 'c', v, 'f', "stop");
+		sensors = 1;
+	}
+	else
+	{
+		mot1_enc(200, 'c', v, 'f', "stop");
+		mot1_enc(200, 'b', v, 'f', "stop");
+		sensors = 0;
+	}
+}
+
 void hapuga(char dir)
 {
 	if(dir=='u')
@@ -391,15 +428,23 @@ void zahvat(char dir)
 {
 	if(dir=='c')
 	{
-		motor[motorD]=30;
-		wait10Msec(140);
+		motor[motorD]=-35;
+		wait10Msec(120);
 		motor[motorD]=0;
 	}
 	if(dir=='o')
 	{
-		motor[motorD]=-40;
-		wait10Msec(60);
+		motor[motorD]=35;
+		wait10Msec(120);
 		motor[motorD]=0;
+	}
+		if(dir=='u')
+	{
+
+	}
+	if(dir=='d')
+	{
+
 	}
 }
 
@@ -459,6 +504,93 @@ void line_correction(short speed, const string ifStop)
 	{
 		stopmotor();
 	}
+}
+
+void akkumBlGr()
+{
+	LineCross(v,"");
+	move_enc(100, v, 'f', "stop");
+	hapuga('d');
+	move_enc(100, v, 'b', "stop");
+	hapuga('u');
+}
+
+void akkum_std()
+{
+	v=25;
+	//v=50;
+	move_enc(CROSS_ENC, v, 'f', "stop");
+	move_enc(TURNAROUND, v, 'l', "stop");
+	move_enc(200, 15, 'b', "stop");
+	zahvat('o');
+	zahvat('c');
+	fwd_black(1, v, "");
+	povright(v, "cross");
+}
+
+void turning(short destination)
+{
+	short new_orientation;
+	if(destination > location)
+	{
+		new_orientation = 3;
+	}
+	else
+	{
+		new_orientation = 0;
+	}
+	if(orientation != new_orientation)
+	{
+		if((orientation + 1)%4 == new_orientation)
+		{
+			while(orientation != new_orientation)
+			{
+				move_enc(TURN, v, 'r', "");
+				orientation = (orientation + 1) % 4;
+			}
+		}
+		else
+		{
+			while(orientation != new_orientation)
+			{
+				move_enc(TURN, v, 'l', "");
+				orientation = abs(orientation - 3);
+			}
+		}
+		stopmotor();
+	}
+}
+
+void crosses(short destination)
+{
+	turning(destination);
+	if(destination % 2 != location % 2)
+	{
+		lineToLine();
+	}
+	if(sensors == 0)
+	{
+		for(short i = 0; i < abs(destination - location)/2 + abs(destination - location) % 2; i++)
+		{
+			if(i != 0)
+			{
+				Line_enc(100, v, "");
+			}
+			LineCross(v, "");
+		}
+	}
+	else
+	{
+		for(short i = 0; i < abs(destination - location)/2 + abs(destination - location) % 2; i++)
+		{
+			if(i != 0)
+			{
+				Line1_enc(100, v, "");
+			}
+			Line1Cross(v, "");
+		}
+	}
+	stopmotor();
 }
 
 #endif
