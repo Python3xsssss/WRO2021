@@ -197,6 +197,7 @@ void checkExcess()
 
 void checkDom2()
 {
+	//bricksInRobot[0] = -1; bricksInRobot[1] = -1;
 	//v=40;
 	LineRed(v, "stop");
 	mot1_enc(ONEMOTORTURN, 'c', v, 'b', "stop");
@@ -223,6 +224,21 @@ void checkDom3()
 	fwd_black(2, v, "stop");
 }
 
+void ApproachToBlue()
+{
+	fwd_white(1, v, "");
+  fwd_black(1, v,"stop");
+	while (SensorValue[S1]<WHITE)
+	{
+		motor[motorB]=v;
+	}
+	while (SensorValue[S1]>BLACK)
+	{
+		motor[motorB]=v;
+	}
+}
+
+
 void checkAllField()
 {
 	checkDom1();
@@ -230,6 +246,7 @@ void checkAllField()
 	checkDom2();
 	akkum_std();
 	checkDom3();
+	ApproachToBlue();
 }
 
 #endif

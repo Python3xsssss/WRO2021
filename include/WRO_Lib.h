@@ -11,15 +11,16 @@
 #define TURN 250
 #define TURNAROUND 500
 #define ONEMOTORTURN 485
-#define CROSS_ENC 70
+#define CROSS_ENC 90
 
 short v;
 short orientation, location;
-short sensors;
-short indDoms[3][2] = {{0,2}, {1,2}, {-1,1}}; // indDoms[0][0] - color index of first indicator in first dom
-short nInds[3] = {1, 2, 2}; // nInds[0] - num of blue indicators, etc.
-short bricksInRobot[4] = {2, 2, 1, 1}; // bricksInRobot[0] - color index of bricks in hapuga, [1] - on hapuga, [2] - in zahvat, [3] - on zahvat
+short sensors = 0;
+short indDoms[3][2] = {{0,1}, {0,2}, {-1,1}}; // indDoms[0][0] - color index of first indicator in first dom
+short nInds[3] = {2, 2, 1}; // nInds[0] - num of blue indicators, etc.
+short bricksInRobot[4] = {-1, -2, 0, 0}; // bricksInRobot[0] - color index of bricks in hapuga, [1] - on hapuga, [2] - in zahvat, [3] - on zahvat
 short exColor;
+short zahvatPos = 0;
 float k1, k2;
 tHTCS2 colorSensor;
 
@@ -414,38 +415,64 @@ void hapuga(char dir)
 {
 	if(dir=='u')
 	{
-		motor[motorA]=25;
+		motor[motorA]=20;
 	}
 	if(dir=='d')
 	{
-		motor[motorA]=-25;
+		motor[motorA]=-30;
 	}
-	wait10Msec(65);
+	wait10Msec(70);
 	motor[motorA]=0;
 }
 
 void zahvat(char dir)
 {
+	nMotorEncoder[motorD]=0;
 	if(dir=='c')
 	{
-		motor[motorD]=-35;
-		wait10Msec(120);
-		motor[motorD]=0;
+		if(zahvatPos != 0)
+		{
+			motor[motorD]=-35;
+			wait10Msec(120);
+		}
+		zahvatPos = 0;
 	}
 	if(dir=='o')
 	{
-		motor[motorD]=35;
-		wait10Msec(120);
-		motor[motorD]=0;
+		if(zahvatPos != 2)
+		{
+			motor[motorD]=35;
+			wait10Msec(120);
+		}
+		zahvatPos = 2;
 	}
-		if(dir=='u')
+	if(dir=='m')
 	{
-
+		nMotorEncoder[motorD]=0;
+		if(zahvatPos == 0)
+		{
+			while(nMotorEncoder[motorD] < 200)
+			{
+				motor[motorD]=25;
+			}
+		}
+		if(zahvatPos == 2)
+		{
+			while(nMotorEncoder[motorD] > -250)
+			{
+				motor[motorD]=-35;
+			}
+		}
+		zahvatPos = 1;
 	}
-	if(dir=='d')
+	if(dir=='g')
 	{
-
+		while(nMotorEncoder[motorD] > -55)
+		{
+			motor[motorD]=-20;
+		}
 	}
+	motor[motorD]=0;
 }
 
 void perebros(short speed)
@@ -513,6 +540,7 @@ void akkumBlGr()
 	hapuga('d');
 	move_enc(100, v, 'b', "stop");
 	hapuga('u');
+	bricksInRobot[3] = -2;
 }
 
 void akkum_std()
@@ -525,7 +553,7 @@ void akkum_std()
 	zahvat('o');
 	zahvat('c');
 	fwd_black(1, v, "");
-	povright(v, "cross");
+	bricksInRobot[1] = -2;
 }
 
 void turning(short destination)
@@ -563,12 +591,12 @@ void turning(short destination)
 
 void crosses(short destination)
 {
-	turning(destination);
+	//turning(destination);
 	if(destination % 2 != location % 2)
 	{
 		lineToLine();
 	}
-	if(sensors == 0)
+	if(destination % 2 == 0)
 	{
 		for(short i = 0; i < abs(destination - location)/2 + abs(destination - location) % 2; i++)
 		{
@@ -591,6 +619,7 @@ void crosses(short destination)
 		}
 	}
 	stopmotor();
+	location = destination;
 }
 
 #endif
