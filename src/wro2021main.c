@@ -6,7 +6,7 @@
 
 #include "WRO_Lib.h"
 #include "Check.h"
-//#include "Allocate.h"
+#include "Allocate.h"
 
 void init()
 {
@@ -25,58 +25,52 @@ void stapt()
 /*
 void batarei()
 {
-	LineCross();
-	povright();
-	Line_enc(250);
-	move_enc(TURN,v,'l');
-	move_enc(200,v,'f');
-	hapuga('d');
-	move_enc(TURN,v,'l');
-	move_enc(100,v,'b');
-	hapuga('u');
-	move_enc(200,v,'b');
-	move_enc(TURN,v,'l');
-	while (SensorValue[S1]<WHITE)
-	{
-		motor[motorB]=v;
-		motor[motorC]=-v;
-	}
-	while (SensorValue[S1]>BLACK+20)
-	{
-		motor[motorB]=v;
-		motor[motorC]=-v;
-	}
-	move_enc(20, v, 'f');
-	povright();
-	while(SensorValue[S3]<WHITE)
-	{
-		Line1();
-	}
-	while(SensorValue[S3]>BLACK+20)
-	{
-		Line1();
-	}
-	move_enc(200,v,'f');
-	move_enc(TURN,v,'r');
-	move_enc(333,v,'f');
-	hapuga('d');
-	move_enc(TURN,v,'r');
-	move_enc(135,v,'b');
-	hapuga('u');
-	move_enc(270,v,'b');
+LineCross();
+povright();
+Line_enc(250);
+move_enc(TURN,v,'l');
+move_enc(200,v,'f');
+hapuga('d');
+move_enc(TURN,v,'l');
+move_enc(100,v,'b');
+hapuga('u');
+move_enc(200,v,'b');
+move_enc(TURN,v,'l');
+while (SensorValue[S1]<WHITE)
+{
+motor[motorB]=v;
+motor[motorC]=-v;
+}
+while (SensorValue[S1]>BLACK+20)
+{
+motor[motorB]=v;
+motor[motorC]=-v;
+}
+move_enc(20, v, 'f');
+povright();
+while(SensorValue[S3]<WHITE)
+{
+Line1();
+}
+while(SensorValue[S3]>BLACK+20)
+{
+Line1();
+}
+move_enc(200,v,'f');
+move_enc(TURN,v,'r');
+move_enc(333,v,'f');
+hapuga('d');
+move_enc(TURN,v,'r');
+move_enc(135,v,'b');
+hapuga('u');
+move_enc(270,v,'b');
 }*/
 
 task main()
 {
-	clearDebugStream();
-	init();
+	v=25; k1=0.2; k2=2;
 	stapt();
+	readSensor(&colorSensor);
 	checkAllField();
-	//AllocateAllBricks();
-	//batarei();
-	//finish(!!!NE NAPISANO!!!);
-	//writeDebugStreamLine("%d, %d", indDoms[0][0], indDoms[0][1]);
-	//writeDebugStreamLine("%d, %d", indDoms[1][0], indDoms[1][1]);
-	//writeDebugStreamLine("%d, %d", indDoms[2][0], indDoms[2][1]);
-	//wait10Msec(1000);
+	allocateAllBricks();
 }
