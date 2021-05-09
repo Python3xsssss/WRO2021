@@ -155,7 +155,7 @@ void putInDom(short hapuga1, short zahvat1, short zahvat2, short hapuga2)
 
 	if(zahvat1 == 1 || zahvat2 == 1)
 	{
-		move_enc(40, v, 'f', "stop");
+		move_enc(00, v, 'f', "stop");
 		zahvat(15, 'm');
 	}
 
@@ -164,9 +164,9 @@ void putInDom(short hapuga1, short zahvat1, short zahvat2, short hapuga2)
 		if(zahvat1 == 1)
 		{
 			zahvat(15, 'o');
-			move_enc(25, v, 'b', "stop");
+			move_enc(180, v, 'b', "stop");
 		}
-		move_enc(120, v, 'f', "");
+		move_enc(180, v, 'f', "");
 	}
 
 	if(zahvat1 == 1 && zahvat2 == 1)
@@ -312,7 +312,7 @@ void move_to(short destination, const string ifTurn)
 				motor[rightMotor]=v;
 			}
 			stopmotor();
-			mot1_enc(165,'c',v,'f',"stop");
+			mot1_enc(10,'c',v,'f',"stop");
 			while(SensorValue[S2] > BLACK)
 			{
 				motor[motorC]=-v;
@@ -400,7 +400,7 @@ void allocation(short col)
 		{
 			break;
 		}
-		if((nInds[col] == 1 || nInds[2*col] == 1) && location == 4 && old_location == 4)
+		if(((nInds[col] == 1 || nInds[2*col] == 1) && location == 4 && old_location == 4) || (col == 1 && ourWay[i] != 1))
 		{
 			move_to(ourCrosses[i], "");
 		}
@@ -421,6 +421,11 @@ void allocation(short col)
 			}
 			else
 			{
+				if(ourWay[0] != 1)
+				{
+					Line_enc(CROSS_ENC, v, "stop");
+					move_enc(TURN, v, 'r', "stop");
+				}
 				if(nInds[1] == 1)
 				{
 					akkumBlGr();
@@ -450,6 +455,17 @@ void allocation(short col)
 		old_location = location;
 		location = ourCrosses[i];
 	}
+	if(col == 0)
+	{
+		if((ourWay[1] == 3 || ourWay[2] == 3) && location == 4 && nInds[2] == 1)
+		{
+			povleft(v, "cross");
+		}
+		else
+		{
+			povright(v, "cross");
+		}
+	}
 }
 
 void takeYellowZone()
@@ -461,7 +477,7 @@ void takeYellowZone()
 	move_enc(70,v,'f',"stop");
 	zahvat(20, 'o');
 	move_enc(120,v,'b',"stop");
-	zahvat(20, 'c');
+	zahvat(15, 'c');
 	povleft(v, "cross");
 	LineCross(v, "");
 	Line_enc(700, v, "stop");
@@ -516,8 +532,6 @@ void takeBlueZone()
 	bricksInRobot[2] = 0; bricksInRobot[3] = 0;
 	location = 7;
 }
-
-
 
 void takeGreenZone()
 {

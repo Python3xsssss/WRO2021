@@ -19,7 +19,7 @@ void init()
 void stapt()
 {
 	motor[motorD]=-25;
-	move_enc(200, v, 'f', "");
+	move_enc(240, v, 'f', "");
 	Line1Cross(v, "");
 }
 /*
@@ -69,8 +69,11 @@ move_enc(270,v,'b');
 task main()
 {
 	v=25; k1=0.2; k2=2;
-	stapt();
-	readSensor(&colorSensor);
-	checkAllField();
-	allocateAllBricks();
+	init();
+	//stapt();
+	//checkAllField();
+	//allocateAllBricks();
+	hapuga('d');
+	location = 8;
+	allocation(1);
 }

@@ -12,12 +12,12 @@
 #define TURNAROUND 500
 #define ONEMOTORTURN 500
 #define CROSS_ENC 85
-#define HAPUGAM 25
+#define HAPUGAM 28
 
 short v;
 short orientation, location, old_location;
 short sensors = 0;
-short indDoms[3][2] = {{2,1}, {-1,2}, {0,0}}; // indDoms[0][0] - color index of first indicator in first dom
+short indDoms[3][2] = {{1,2}, {0,-1}, {0,2}}; // indDoms[0][0] - color index of first indicator in first dom
 short nInds[3] = {2, 1, 2}; // nInds[0] - num of blue indicators, etc.
 short bricksInRobot[4] = {2, 2, 1, 1}; // bricksInRobot[0] - color index of bricks in hapuga, [1] - on hapuga, [2] - in zahvat, [3] - on zahvat
 short exColor;
@@ -378,6 +378,21 @@ bool pass_any(short nEnc, short speed)
 	return true;
 }
 
+bool line_any(short nEnc, short speed)
+{
+	nMotorEncoder[motorB]=0;
+	while(colorSensor.color == 0)
+	{
+		readSensor(&colorSensor);
+		Line(speed);
+		if (nMotorEncoder[motorB] >= nEnc)
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
 void mot1_enc(short enc, char portMotor, short speed, char dir, const string ifStop)
 {
 	if (portMotor=='b')
@@ -453,7 +468,7 @@ void hapuga(char dir)
 	if(dir ==  'm')
 	{
 		motor[motorA]=15;
-		wait10Msec(25);
+		wait10Msec(18);
 		motor[motorA]=0;
 		wait10Msec(20);
 		nMotorEncoder[motorA]=0;
@@ -523,6 +538,7 @@ void perebros(short speed)
 	move_enc(TURNAROUND+25, speed, 'l', "stop");
 	move_enc(200, speed, 'b', "stop");
 	zahvat(25, 'c');
+	bricksInRobot[0] = -2; bricksInRobot[1] = -1;
 }
 
 void line_correction(short speed, const string ifStop)

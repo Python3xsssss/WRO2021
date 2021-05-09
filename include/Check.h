@@ -115,7 +115,7 @@ void take_yellow_ex()
 
 void take_green_ex()
 {
-	move_enc(20, v, 'f', "stop");
+	move_enc(5, v, 'f', "stop");
 	move_enc(TURN, v, 'r', "stop");
 	move_enc(160, v, 'f', "stop");
 	wait1Msec(50);
@@ -154,7 +154,7 @@ void checkExcess()
 	nMotorEncoder[motorB] = 0;
 	readSensor(&colorSensor);
 	exColor = 2;
-	if (!pass_any(450, v))
+	if (!line_any(450, v))
 	{
 		exColor -= 1;
 	}
@@ -173,7 +173,7 @@ void checkExcess()
 	povright(v, "");
 	LineCross(v, "");
 	Line_enc(30, v, "stop");
-	mot1_enc(ONEMOTORTURN, 'b', v, 'f', "stop");
+	mot1_enc(ONEMOTORTURN+25, 'b', v, 'f', "stop");
 	nMotorEncoder[motorB]=0;
 	if (!pass_any(400, v))
 	{
@@ -218,7 +218,7 @@ void checkDom2()
 void checkDom3()
 {
 	povright(v, "cross");
-	Line_enc(240, v, "");
+	Line_enc(280, v, "");
 
 	perebros(v);
 	move_enc(TURNAROUND, v, 'r', "stop");
