@@ -59,8 +59,8 @@ task grip()
 void checkDom1()
 {
 	motor[motorD]=-25;
-	move_enc(250, v, 'f', "stop");
-	move_enc(260, 50, 'l', "stop");
+	move_enc(260, v, 'f', "stop");
+	move_enc(TURN+10, 50, 'l', "stop");
 	motor[motorD]=0;
 
 	moving(40, 'b');
@@ -94,12 +94,12 @@ void take_yellow_ex()
 	*/
 	move_enc(TURN, v, 'r', "stop");
 	move_enc(245, v, 'f', "stop");
+	startTask(zahvatO);
 	hapuga('d');
 	move_enc(70, v, 'b', "stop");
-	zahvat(40, 'o');
 	move_enc(TURNAROUND-10, 25, 'l', "stop");
 	move_enc(260, v, 'b', "stop");
-	wait10Msec(10);
+	wait10Msec(5);
 	zahvat(30, 'c');
 	move_enc(TURN, v, 'l', "stop");
 	v=50;
@@ -119,9 +119,9 @@ void take_green_ex()
 	move_enc(TURN, v, 'r', "stop");
 	move_enc(160, v, 'f', "stop");
 	wait1Msec(50);
+	startTask(zahvatO);
 	hapuga('d');
 	move_enc(70, v, 'b', "stop");
-	zahvat(40, 'o');
 	move_enc(TURNAROUND, v, 'l', "stop");
 	move_enc(200, v, 'b', "stop");
 	zahvat(30, 'c');
@@ -133,7 +133,6 @@ void take_green_ex()
 
 void take_blue_ex()
 {
-	zahvat(40, 'o');
 	move_enc(250, v, 'b', "stop");
 	zahvat(30, 'c');
 	move_enc(TURNAROUND, v, 'l', "stop");
@@ -203,39 +202,41 @@ void checkDom2()
 	//bricksInRobot[0] = -1; bricksInRobot[1] = -1;
 	//v=40;
 	LineRed(v, "stop");
-	move_enc(20, v, 'b', "stop");
+	move_enc(20, v, 'b', "");
+	motor[motorB] = 0;
 	mot1_enc(ONEMOTORTURN, 'c', v, 'b', "stop");
 	check_ind(1, ENC_DOM23_1, ENC_DOM23_2);
 	fwd_black(3, v, "");
 	povleft(v, "cross");
-	while(SensorValue[S2]>15||SensorValue[S3]>15)
+	while(SensorValue[S2]>BLACK||SensorValue[S3]>BLACK)
 	{
 		Line(v);
 	}
-	stopmotor();
 }
 
 void checkDom3()
 {
 	povright(v, "cross");
-	Line_enc(280, v, "");
+	Line_enc(350, v, "");
 
 	perebros(v);
 	move_enc(TURNAROUND, v, 'r', "stop");
 
-	LineCross(v, "stop");
+	LineCross(v, "");
 	povright(v, "cross");
 	LineRed(v, "stop");
-	move_enc(20, v, 'b', "stop");
+	move_enc(20, v, 'b', "");
+	motor[motorB] = 0;
 	mot1_enc(ONEMOTORTURN, 'c', v, 'b', "stop");
 	check_ind(2, ENC_DOM23_1, ENC_DOM23_2);
-	fwd_black(2, v, "stop");
+	fwd_black(2, v, "");
 }
 
 void approachToBlue()
 {
 	fwd_white(2, v, "");
-	move_enc(25, v, 'f', "stop");
+	move_enc(25, v, 'f', "");
+	motor[motorC] = 0;
 	while (SensorValue[S1]<WHITE)
 	{
 		motor[motorB]=v;
@@ -244,7 +245,7 @@ void approachToBlue()
 	{
 		motor[motorB]=v;
 	}
-	move_enc(50, v, 'f', "stop");
+	move_enc(50, v, 'f', "");
 }
 
 

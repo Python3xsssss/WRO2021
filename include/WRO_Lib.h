@@ -12,14 +12,15 @@
 #define TURNAROUND 500
 #define ONEMOTORTURN 500
 #define CROSS_ENC 85
-#define HAPUGAM 28
+#define HAPUGAM 27
+#define ZAHVATG 66
 
 short v;
 short orientation, location, old_location;
 short sensors = 0;
-short indDoms[3][2] = {{1,2}, {0,-1}, {0,2}}; // indDoms[0][0] - color index of first indicator in first dom
-short nInds[3] = {2, 1, 2}; // nInds[0] - num of blue indicators, etc.
-short bricksInRobot[4] = {2, 2, 1, 1}; // bricksInRobot[0] - color index of bricks in hapuga, [1] - on hapuga, [2] - in zahvat, [3] - on zahvat
+short indDoms[3][2] = {{-1,-1}, {-1,-1}, {-1,-1}}; // indDoms[0][0] - color index of first indicator in first dom
+short nInds[3] = {0, 0, 0}; // nInds[0] - num of blue indicators, etc.
+short bricksInRobot[4] = {0, 0, 0, 0}; // bricksInRobot[0] - color index of bricks in hapuga, [1] - on hapuga, [2] - in zahvat, [3] - on zahvat
 short exColor;
 short zahvatPos = 0;
 float k1, k2;
@@ -468,7 +469,7 @@ void hapuga(char dir)
 	if(dir ==  'm')
 	{
 		motor[motorA]=15;
-		wait10Msec(18);
+		wait10Msec(20);
 		motor[motorA]=0;
 		wait10Msec(20);
 		nMotorEncoder[motorA]=0;
@@ -522,7 +523,7 @@ void zahvat(short speed, char dir)
 	}
 	if(dir=='g')
 	{
-		while(nMotorEncoder[motorD] > -55)
+		while(nMotorEncoder[motorD] > -ZAHVATG)
 		{
 			motor[motorD]=-speed;
 		}
@@ -530,11 +531,43 @@ void zahvat(short speed, char dir)
 	motor[motorD]=0;
 }
 
+task hapugaU()
+{
+	hapuga('u');
+}
+
+task hapugaDM()
+{
+	hapuga('d');
+	wait10Msec(25);
+	hapuga('m');
+}
+
+task hapugaM()
+{
+	hapuga('m');
+}
+
+task hapugaD()
+{
+	hapuga('d');
+}
+
+task zahvatC()
+{
+	zahvat(30, 'c');
+}
+
+task zahvatO()
+{
+	zahvat(40, 'o');
+}
+
 void perebros(short speed)
 {
 	hapuga('u');
-	move_enc(180, speed, 'b', "stop");
-	zahvat(40, 'o');
+	startTask(zahvatO);
+	move_enc(150, speed, 'b', "stop");
 	move_enc(TURNAROUND+25, speed, 'l', "stop");
 	move_enc(200, speed, 'b', "stop");
 	zahvat(25, 'c');
@@ -589,67 +622,36 @@ void line_correction(short speed, const string ifStop)
 void akkumBlGr()
 {
 	LineCross(v,"");
-	move_enc(125, v, 'f', "stop");
-	hapuga('d');
-	move_enc(125, v, 'b', "stop");
-	hapuga('u');
+	move_enc(140, v-5, 'f', "stop");
+	motor[motorA]=-20;
+	wait10Msec(30);
+	move_enc(140, v-5, 'b', "stop");
+	motor[motorA]=0;
+	wait10Msec(50);
+	hapuga('m');
 	bricksInRobot[3] = -2;
 }
 
 void akkum_std()
 {
 	v=25;
-	//v=50;
+	LineCross(v,"");
 	move_enc(CROSS_ENC, v, 'f', "stop");
-	move_enc(TURNAROUND, v, 'l', "stop");
+	move_enc(TURNAROUND+12, v, 'l', "stop");
 	move_enc(75, 15, 'b', "stop");
 	zahvat(20, 'o');
 	zahvat(20, 'c');
-	fwd_black(1, v, "stop");
+	fwd_black(1, v, "");
 	bricksInRobot[1] = -2;
 }
 
-void turning(short destination)
+void crosses(short destination, const string ifStop)
 {
-	short new_orientation;
-	if(destination > location)
-	{
-		new_orientation = 3;
-	}
-	else
-	{
-		new_orientation = 0;
-	}
-	if(orientation != new_orientation)
-	{
-		if((orientation + 1)%4 == new_orientation)
-		{
-			while(orientation != new_orientation)
-			{
-				move_enc(TURN, v, 'r', "");
-				orientation = (orientation + 1) % 4;
-			}
-		}
-		else
-		{
-			while(orientation != new_orientation)
-			{
-				move_enc(TURN, v, 'l', "");
-				orientation = abs(orientation - 3);
-			}
-		}
-		stopmotor();
-	}
-}
-
-void crosses(short destination)
-{
-	//turning(destination);
-	if(sensors == (location - destination) % 2 && destination < location || sensors != (destination - location) % 2 && destination > location)
+	if(sensors != destination % 2 && destination < location || sensors == destination % 2 && destination > location)
 	{
 		lineToLine();
 	}
-	if(destination % 2 == 0 && destination < location)
+	if(destination % 2 == 0 && destination < location || destination % 2 != 0 && destination > location)
 	{
 		for(short i = 0; i < abs(destination - location)/2 + abs(destination - location) % 2; i++)
 		{
@@ -673,7 +675,10 @@ void crosses(short destination)
 			Line1Cross(v, "");
 		}
 	}
-	stopmotor();
+	if (ifStop == "stop" || ifStop == "Stop" || ifStop == "STOP")
+	{
+		stopmotor();
+	}
 	old_location = location;
 	location = destination;
 }

@@ -68,12 +68,15 @@ move_enc(270,v,'b');
 
 task main()
 {
+	//clearTimer(T1);
 	v=25; k1=0.2; k2=2;
 	init();
-	//stapt();
-	//checkAllField();
+	stapt();
+	checkAllField();
+	take_blue_ex();
+	allocation(0);
+	take_green_ex();
+	take_yellow_ex();
 	//allocateAllBricks();
-	hapuga('d');
-	location = 8;
-	allocation(1);
+	//writeDebugStreamLine("Time: %d", time1[T1] / 1000);
 }

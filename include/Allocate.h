@@ -7,8 +7,6 @@ short rightWay[2][4] = {{2, 1, 3, 0}, {1, 3, 2, 0}};
 short ourWay[5];
 short ourCrosses[5];
 short finalRazvoz[4][4];
-short counter;
-short cross;
 //enum zones{smth};
 
 /*
@@ -30,93 +28,76 @@ break;
 }
 */
 
-task hapugaU()
+int assignment(int zone)
 {
-	hapuga('u');
+	if(zone == -2)
+	{
+		return 2;
+	}
+
+	else if(zone == -1)
+	{
+		return 3;
+	}
+
+	else if(zone == 0)
+	{
+		return 1;
+	}
+
+	else if(zone == 1)
+	{
+		return 4;
+	}
+
+	else if(zone == 2)
+	{
+		return 5;
+	}
+
+	else if(zone == 3)
+	{
+		return 4;
+	}
+
+	else
+	{
+		return -1;
+	}
 }
 
-task hapugaDM()
-{
-	hapuga('d');
-	wait10Msec(25);
-	hapuga('m');
-}
-
-task hapugaM()
-{
-	hapuga('m');
-}
-
-task zahvatC()
-{
-	zahvat(30, 'c');
-}
-
-//int assignment(int zone)
+//void assignment(int zone)
 //{
 //	if(zone == -2)
 //	{
-//		return 2;
+//		cross = 2;
 //	}
 
 //	if(zone == -1)
 //	{
-//		return 3;
+//		cross = 3;
 //	}
 
 //	if(zone == 0)
 //	{
-//		return 1;
+//		cross = 1;
 //	}
 
 //	if(zone == 1)
 //	{
-//		return 4;
+//		cross = 4;
 //	}
 
 //	if(zone == 2)
 //	{
-//		return 5;
+//		cross = 5;
 //	}
 
 //	if(zone == 3)
 //	{
-//		return 4;
+//		cross = 4;
 //	}
 //}
-
-void assignment(int zone)
-{
-	if(zone == -2)
-	{
-		cross = 2;
-	}
-
-	if(zone == -1)
-	{
-		cross = 3;
-	}
-
-	if(zone == 0)
-	{
-		cross = 1;
-	}
-
-	if(zone == 1)
-	{
-		cross = 4;
-	}
-
-	if(zone == 2)
-	{
-		cross = 5;
-	}
-
-	if(zone == 3)
-	{
-		cross = 4;
-	}
-}
 
 void putInDom(short hapuga1, short zahvat1, short zahvat2, short hapuga2)
 {
@@ -155,7 +136,7 @@ void putInDom(short hapuga1, short zahvat1, short zahvat2, short hapuga2)
 
 	if(zahvat1 == 1 || zahvat2 == 1)
 	{
-		move_enc(00, v, 'f', "stop");
+		Line_enc(80, v, "stop");
 		zahvat(15, 'm');
 	}
 
@@ -166,7 +147,6 @@ void putInDom(short hapuga1, short zahvat1, short zahvat2, short hapuga2)
 			zahvat(15, 'o');
 			move_enc(180, v, 'b', "stop");
 		}
-		move_enc(180, v, 'f', "");
 	}
 
 	if(zahvat1 == 1 && zahvat2 == 1)
@@ -188,15 +168,16 @@ void putInDom(short hapuga1, short zahvat1, short zahvat2, short hapuga2)
 	{
 		startTask(hapugaDM);
 	}
-	LineCross(v, "stop");
+	LineCross(v, "");
 	startTask(zahvatC);
 }
 
 
 void calculation(short col)
 {
+	short counter = 0;
 	short i1, i2;
-	for(short i; i<4; i++)
+	for(short i = 0; i<4; i++)
 	{
 		for(short j = 0; j<4; j++)
 		{
@@ -302,20 +283,29 @@ void move_to(short destination, const string ifTurn)
 		{
 			fwd_white(3,v,"");
 			fwd_black(2, v, "");
-			move_enc(80,v,'f',"stop");
-			//while(SensorValue[S2]<40)
-			//{
-			//	motor[rightMotor]=v;
-			//}
+			move_enc(30,v,'f',"");
+			motor[leftMotor]=0;
+			while(SensorValue[S2]<40)
+			{
+				motor[rightMotor]=v;
+			}
 			while(SensorValue[S2]>20)
 			{
 				motor[rightMotor]=v;
 			}
 			stopmotor();
-			mot1_enc(10,'c',v,'f',"stop");
-			while(SensorValue[S2] > BLACK)
+			while(SensorValue[S3] < WHITE)
 			{
 				motor[motorC]=-v;
+			}
+			while(SensorValue[S3] > GREY)
+			{
+				motor[motorC]=-v;
+			}
+			motor[motorC] = 0;
+			while(SensorValue[S3] < WHITE)
+			{
+				motor[motorB]=v;
 			}
 			stopmotor();
 		}
@@ -345,6 +335,7 @@ void move_to(short destination, const string ifTurn)
 		}
 		else
 		{
+			move_enc(200, v, 'b', "stop");
 			move_enc(TURNAROUND, v, 'r', "stop");
 		}
 		fwd_white(2, v, "");
@@ -368,10 +359,14 @@ void move_to(short destination, const string ifTurn)
 				povleft(v, "cross");
 			}
 		}
-		crosses(destination);
+		crosses(destination, "");
 		if(old_location != destination)
 		{
 			move_enc(CROSS_ENC, v, 'f', "stop");
+		}
+		else
+		{
+			stopmotor();
 		}
 		if((old_location < destination && destination % 2 == 1) || (old_location > destination && destination % 2 == 0))
 		{
@@ -390,17 +385,11 @@ void allocation(short col)
 	calculation(col);
 	for(short i = 0; i < 5; i++)
 	{
-		assignment(ourWay[i]);
-		ourCrosses[i] = cross;
-		cross = -1;
+		ourCrosses[i] = assignment(ourWay[i]);
 	}
-	for(short i = 0; i < 4; i++)
+	for(short i = 0; (i < 4) && (ourWay[i] >= 0); i++)
 	{
-		if(ourWay[i] < 0)
-		{
-			break;
-		}
-		if(((nInds[col] == 1 || nInds[2*col] == 1) && location == 4 && old_location == 4) || (col == 1 && ourWay[i] != 1))
+		if(((nInds[col] == 1 || nInds[2*col] == 1) && location == 4 && old_location == 4) || (col == 1 && ourWay[i] != 1 && i == 0))
 		{
 			move_to(ourCrosses[i], "");
 		}
@@ -416,18 +405,21 @@ void allocation(short col)
 		{
 			if(col == 0)
 			{
+				hapuga('u');
 				akkumBlGr();
 				povright(v, "cross");
+				Line_enc(100, v, "");
 			}
 			else
 			{
 				if(ourWay[0] != 1)
 				{
-					Line_enc(CROSS_ENC, v, "stop");
-					move_enc(TURN, v, 'r', "stop");
+					Line_enc(250, v, "stop");
+					move_enc(TURNAROUND, v, 'r', "stop");
 				}
 				if(nInds[1] == 1)
 				{
+					hapuga('u');
 					akkumBlGr();
 					if(ourWay[i+1] == 2)
 					{
@@ -437,6 +429,7 @@ void allocation(short col)
 					{
 						povright(v, "cross");
 					}
+					Line_enc(100, v, "");
 				}
 				else
 				{
@@ -474,15 +467,15 @@ void takeYellowZone()
 	povleft(v, "cross");
 	Line_enc(610, v, "stop");
 	move_enc(TURN,v,'l',"stop");
-	move_enc(70,v,'f',"stop");
+	move_enc(120,v,'f',"stop");
 	zahvat(20, 'o');
-	move_enc(120,v,'b',"stop");
+	move_enc(120+CROSS_ENC,v,'b',"stop");
 	zahvat(15, 'c');
 	povleft(v, "cross");
 	LineCross(v, "");
-	Line_enc(700, v, "stop");
+	Line_enc(660, v, "stop");
 	move_enc(TURN,v,'l',"stop");
-	move_enc(200,v,'f',"stop");
+	move_enc(170,v,'f',"stop");
 	hapuga('d');
 	bricksInRobot[0] = 2; bricksInRobot[1] = 2;
 	location = 8;
@@ -508,15 +501,14 @@ void takeBlueZone()
 	{
 		Line2(v);
 	}
+	startTask(hapugaD);
 	while(SensorValue[S2]>30)
 	{
 		moving(v, 'f');
 	}
-	stopmotor();
 	move_enc(100, v, 'f', "stop");
-	hapuga('d');
 	mot1_enc(ONEMOTORTURN, 'b', v, 'b', "stop");
-	move_enc(125, v, 'f', "stop");
+	move_enc(145, v, 'f', "stop");
 	hapuga('u');
 	move_enc(125,v,'b',"stop");
 	move_enc(250,v,'r',"stop");
@@ -525,26 +517,26 @@ void takeBlueZone()
 	move_enc(240, v, 'f', "stop");
 	move_enc(TURN, v, 'r', "stop");
 	move_enc(50, v, 'f', "stop");
-	zahvat(20, 'm');
 	move_enc(100, v, 'b', "stop");
 	zahvat(20, 'c');
-	mot1_enc(500,'b', v,  'f', "stop");
+	mot1_enc(500,'b', v,  'f', "");
 	bricksInRobot[2] = 0; bricksInRobot[3] = 0;
 	location = 7;
 }
 
 void takeGreenZone()
 {
+	startTask(hapugaU);
 	if(location < 3)
 	{
 		while(SensorValue[S1]<50)
 		{
 			Line(v);
 		}
-		stopmotor();
-		move_enc(35, v, 'b', "stop");
-		move_enc(275, v, 'r', "stop");
-		move_enc(80, v, 'b', "stop");
+		LineCross(v, "stop");
+		move_enc(60, v, 'b', "stop");
+		move_enc(TURN+20, v, 'r', "stop");
+		move_enc(70, v, 'b', "stop");
 	}
 	if(location > 3)
 	{
@@ -557,12 +549,12 @@ void takeGreenZone()
 	hapuga('d');
 	fwd_black(2, v, "stop");
 	nMotorEncoder[motorA]=0;
-	while(nMotorEncoder[motorA]<65)
+	while(nMotorEncoder[motorA]<ZAHVATG-4)
 	{
-		motor[motorA]=25;
+		motor[motorA]=15;
 	}
 	motor[motorA]=0;
-	move_enc(130, v, 'f', "stop");
+	move_enc(130, 18, 'f', "stop");
 	hapuga('u');
 	while(SensorValue[S2]>BLACK)
 	{
@@ -576,12 +568,12 @@ void takeGreenZone()
 	move_enc(200, v, 'f',"stop");
 	zahvat(20, 'm');
 	wait10Msec(10);
-	zahvat(20, 'g');
-	move_enc(180, v, 'b', "stop");
+	zahvat(15, 'g');
+	wait10Msec(15);
+	move_enc(160, 18, 'b', "stop");
 	zahvat(25, 'c');
 	povleft(v, "");
-	LineCross(v, "");
-	fwd_white(1, v, "");
+	lineWhite(v, "");
 	LineCross(v, "");
 	povright(v, "cross");
 	bricksInRobot[2] = 1; bricksInRobot[3] = 1;
