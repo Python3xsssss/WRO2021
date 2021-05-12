@@ -10,73 +10,33 @@
 
 void init()
 {
-	v=25;
-	k1=0.2;
-	k2=10;
+	stdPower=25;
+	lineMaxPower=60;
+	zonePower=40;
+	//k1=0.2;
+	//k2=10;
 	initSensor(&colorSensor, S4);
 }
 
 void stapt()
 {
 	motor[motorD]=-25;
-	move_enc(240, v, 'f', "");
-	Line1Cross(v, "");
+	move_enc(240, stdPower, 'f', "");
+	Line1Cross(stdPower, "");
 }
-/*
-void batarei()
+
+void mainProgram()
 {
-LineCross();
-povright();
-Line_enc(250);
-move_enc(TURN,v,'l');
-move_enc(200,v,'f');
-hapuga('d');
-move_enc(TURN,v,'l');
-move_enc(100,v,'b');
-hapuga('u');
-move_enc(200,v,'b');
-move_enc(TURN,v,'l');
-while (SensorValue[S1]<WHITE)
-{
-motor[motorB]=v;
-motor[motorC]=-v;
+	stapt();
+	checkAllField();
+	allocateAllBricks();
 }
-while (SensorValue[S1]>BLACK+20)
-{
-motor[motorB]=v;
-motor[motorC]=-v;
-}
-move_enc(20, v, 'f');
-povright();
-while(SensorValue[S3]<WHITE)
-{
-Line1();
-}
-while(SensorValue[S3]>BLACK+20)
-{
-Line1();
-}
-move_enc(200,v,'f');
-move_enc(TURN,v,'r');
-move_enc(333,v,'f');
-hapuga('d');
-move_enc(TURN,v,'r');
-move_enc(135,v,'b');
-hapuga('u');
-move_enc(270,v,'b');
-}*/
 
 task main()
 {
-	//clearTimer(T1);
-	v=25; k1=0.2; k2=2;
+	clearTimer(T1);
+	clearDebugStream();
 	init();
-	stapt();
-	checkAllField();
-	take_blue_ex();
-	allocation(0);
-	take_green_ex();
-	take_yellow_ex();
-	//allocateAllBricks();
-	//writeDebugStreamLine("Time: %d", time1[T1] / 1000);
+	mainProgram();
+	writeDebugStreamLine("Time: %d", time1[T1] / 1000);
 }
