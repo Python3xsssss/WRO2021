@@ -2,12 +2,16 @@
 
 #ifndef ALLOCATE_H
 #define ALLOCATE_H
-//short orientation, location;
+
+#define ENC1_DOM 110
+#define ENC2_DOM 170
+
 short rightWay[2][4] = {{1, 3, 2, 0}, {1, 3, 2, 0}};
 short ourWay[5];
 short ourCrosses[5];
 short finalRazvoz[4][4];
 short virtualBricks[4];
+short withoutAkkum = 0;
 //enum zones{smth};
 
 /*
@@ -31,10 +35,10 @@ break;
 
 void checkDom(short dom)
 {
-	move_enc(30, stdPower, 'b', "stop");
+	move_enc(20, stdPower, 'b', "stop");
 	mot1_enc(ONEMOTORTURN, 'c', stdPower, 'b', "stop");
-	check_ind(dom, ENC_DOM23_1, ENC_DOM23_2);
-	fwd_black(2, stdPower, "");
+	check_ind(dom, ENC1_DOM, ENC2_DOM);
+	fwd_black(2, stdPower, "stop");
 }
 
 int assignment(int zone)
@@ -81,15 +85,26 @@ void calcDom(short dom)
 	{
 		virtualBricks[i] = bricksInRobot[i];
 	}
-
 	if(indDoms[dom][0]==0||indDoms[dom][1]==0||indDoms[dom][0]==-1||indDoms[dom][1]==-1)
 	{
 		short i1, i2;
-		for(i1=0; i1<4 || indDoms[dom][0] == bricksInRobot[i2]; i1++)
-		{}
-		for(i2=0; i2<4 || indDoms[dom][1] == bricksInRobot[i2]; i2++)
-		{}
-
+		for(i1=0; i1<4; i1++)
+		{
+			if(indDoms[dom][0] == virtualBricks[i1])
+			{
+				virtualBricks[i1]=-2;
+				break;
+			}
+		}
+		for(i2=0; i2<4; i2++)
+		{
+			if(indDoms[dom][1] == virtualBricks[i2])
+			{
+				virtualBricks[i2]=-2;
+				break;
+			}
+		}
+		writeDebugStreamLine("i1: %d, i2: %d", i1, i2);
 		if(i1 == 4 || i2 == 4)
 		{
 			for(short i3=0; i3 < 4; i3++)
@@ -108,24 +123,27 @@ void calcDom(short dom)
 				if(bricksInRobot[i3] == indDoms[dom][0])
 				{
 					finalRazvoz[dom][i3] = 1;
+					virtualBricks[i3]=-2;
 				}
 			}
 
 			for(short i3=0; i3 < 4; i3++)
 			{
-				if(bricksInRobot[i3] == indDoms[dom][1])
+				if(virtualBricks[i3] == indDoms[dom][1])
 				{
 					finalRazvoz[dom][i3] = 1;
+					virtualBricks=-2;
 				}
 			}
 		}
 	}
 }
 
-void putInDom(short hapuga1, short hapuga2, short zahvat1, short zahvat2, short dom)
+void putInDom(short hapuga1, short hapuga2, short zahvat1, short zahvat2, short dom, short col)
 {
 	if(indDoms[dom][0] == -1 && indDoms[dom][1] == -1)
 	{
+		LineRed(stdPower, "stop");
 		checkDom(dom);
 		calcDom(dom);
 		hapuga1 = finalRazvoz[dom][0]; hapuga2 = finalRazvoz[dom][1]; zahvat1 = finalRazvoz[dom][2]; zahvat2 = finalRazvoz[dom][3];
@@ -150,7 +168,10 @@ void putInDom(short hapuga1, short hapuga2, short zahvat1, short zahvat2, short 
 		bricksInRobot[0] = -2;
 	}
 
-	LineRed(zonePower, "stop");
+	if(hapuga1 != 0 || hapuga2 != 0 || col == 1)
+	{
+		LineRed(zonePower, "stop");
+	}
 
 	if(hapuga1 == 1 || hapuga2 == 1)
 	{
@@ -175,7 +196,7 @@ void putInDom(short hapuga1, short hapuga2, short zahvat1, short zahvat2, short 
 		move_enc(35, stdPower, 'b', "stop");
 	}
 
-	if(hapuga1 != 0 || hapuga2 != 0)
+	if(hapuga1 != 0 || hapuga2 != 0 || col == 1)
 	{
 		move_enc(TURNAROUND, 20, 'l', "stop");
 	}
@@ -222,6 +243,10 @@ void putInDom(short hapuga1, short hapuga2, short zahvat1, short zahvat2, short 
 		startTask(hapugaDM);
 	}
 	LineCross(zonePower, "");
+	if(bricksInRobot[3] == 1)
+	{
+		stopmotor();
+	}
 	startTask(zahvatC);
 }
 
@@ -343,17 +368,7 @@ void move_to(short destination, const string ifTurn1, const string ifTurn2)
 {
 	if(location == 7)
 	{
-		if(ourWay[0] == 1)
-		{
-			povright(stdPower, "cross");
-		}
-		else
-		{
-			startTask(hapugaU);
-			povleft(stdPower, "cross");
-			LineCross(zonePower, "");
-			location = 4;
-		}
+		povright(stdPower, "cross");
 	}
 	if(location == 8)
 	{
@@ -372,7 +387,7 @@ void move_to(short destination, const string ifTurn1, const string ifTurn2)
 		if(ourWay[0] != 1)
 		{
 			if(ourWay[0] == 3)
-				startTask(hapugaU);
+			startTask(hapugaU);
 			location = 3;
 		}
 	}
@@ -431,9 +446,15 @@ void allocation(short col)
 	{
 		for(short i = 0; i<4; i++)
 		{
-			if(rightWay[col][i] != 3 || nInds[col] == 2)
+			ourWay[i] = -1;
+			if(bricksInRobot[0] > -2 || bricksInRobot[1] > -2 || bricksInRobot[2] > -2 ||bricksInRobot[3] > -2)
 			{
-				ourWay[i] = rightWay[col][i];
+				if(rightWay[col][i] == 3 && nInds[col] != 2)
+				{
+					i++;
+					withoutAkkum++;
+				}
+				ourWay[i-withoutAkkum] = rightWay[col][i];
 			}
 		}
 	}
@@ -453,7 +474,7 @@ void allocation(short col)
 		}
 		if(ourWay[i] != 3)
 		{
-			putInDom(finalRazvoz[ourWay[i]][0], finalRazvoz[ourWay[i]][1], finalRazvoz[ourWay[i]][2], finalRazvoz[ourWay[i]][3], ourWay[i]);
+			putInDom(finalRazvoz[ourWay[i]][0], finalRazvoz[ourWay[i]][1], finalRazvoz[ourWay[i]][2], finalRazvoz[ourWay[i]][3], ourWay[i], col);
 		}
 		else
 		{

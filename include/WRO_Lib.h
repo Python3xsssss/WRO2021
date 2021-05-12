@@ -8,14 +8,14 @@
 #define BLACK 15
 #define WHITE 56
 #define GREY 40
-#define TURN 250
-#define TURNAROUND 500
-#define ONEMOTORTURN 500
+#define TURN 253
+#define TURNAROUND 505
+#define ONEMOTORTURN 505
 #define CROSS_ENC 100
-#define SPEC_DIFF 85
+#define SPEC_DIFF 75
 #define HAPUGAM 25
-#define ZAHVATG 31
-#define HAPUGAG 62
+#define ZAHVATG 30
+#define HAPUGAG 64
 //#define LINETOLINE 200
 
 short pauseCounter = 0;
@@ -24,7 +24,7 @@ short location, old_location;
 short sensors = 0;
 short indDoms[3][2] = {{-1,-1}, {-1,-1}, {-1,-1}}; // indDoms[0][0] - color index of first indicator in first dom, etc.
 short nInds[3] = {0, 0, 0}; // nInds[0] - num of blue indicators, etc.
-short bricksInRobot[4] = {-2, -2, -2, -2}; // bricksInRobot[0] - color index of bricks in hapuga, [1] - on hapuga, [2] - in zahvat, [3] - on zahvat
+short bricksInRobot[4] = {-2, 0, -1, 0}; // bricksInRobot[0] - color index of bricks in hapuga, [1] - on hapuga, [2] - in zahvat, [3] - on zahvat
 short exColor;
 short zahvatPos = 0, hap = 2;
 float k1, k2;
@@ -80,8 +80,8 @@ void Line1(short speed)
 	e=SensorValue[S1]-SensorValue[S2]+es;
 	u=k1*es+k2*(e-eold);
 	eold=e;
-	motor[motorB]=(speed + u)*0.96;
-	motor[motorC]=(-speed + u)*1.04;
+	motor[motorB]=(speed + u)*0.97;
+	motor[motorC]=(-speed + u)*1.03;
 }
 
 void Line2(short speed)
@@ -639,10 +639,11 @@ void perebros(short speed)
 	hapuga('u');
 	startTask(zahvatO);
 	move_enc(200, speed, 'b', "stop");
-	move_enc(TURNAROUND+20, speed, 'l', "stop");
+	move_enc(TURNAROUND+14, speed, 'l', "stop");
 	move_enc(200, speed, 'b', "stop");
 	zahvat('c');
-	bricksInRobot[0] = -2; bricksInRobot[1] = -1;
+	move_enc(TURNAROUND+30, stdPower, 'r', "stop");
+	bricksInRobot[0] = -2; bricksInRobot[2] = -1;
 }
 
 void akkumGB()
@@ -663,11 +664,15 @@ void akkum_std()
 {
 	if(indDoms[2][0] != -1 || indDoms[2][1] != -1)
 	{
-		stopmotor();
 		hapuga('d');
 		hapuga('m');
 	}
-	move_enc(TURNAROUND+12, stdPower, 'l', "stop");
+	else
+	{
+		LineCross(stdPower, "");
+	}
+	stopmotor();
+	move_enc(TURNAROUND, stdPower, 'l', "stop");
 	move_enc(90+CROSS_ENC, 15, 'b', "stop");
 	zahvat('o');
 	zahvat('c');
