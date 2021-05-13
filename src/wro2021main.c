@@ -38,18 +38,19 @@ task main()
 	clearTimer(T1);
 	clearDebugStream();
 	init();
-	location = 7;
+	location = 8;
+	//move_to(2, "turn", "turn");
+	//takeYellowZone();
+	bricksInRobot[0] = 2; bricksInRobot[2] = 2; bricksInRobot[1] = -2; bricksInRobot[3] = -2;
+	indDoms[0][0] = 1; indDoms[0][1] = 0;
+	indDoms[1][0] = 1; indDoms[1][1] = -1;
+	indDoms[2][0] = 2; indDoms[2][1] = 0;
+	nInds[2] = 1;
 	hapuga('d');
-	allocation(0);
+	allocation(1);
 	//stapt();
 	//checkDom1();
 	//checkExcess();
 	//mainProgram();
-	//writeDebugStreamLine("Time: %d", time1[T1] / 1000);
-	writeDebugStream("ourWay: ");
-	for(short i=0; i<3; i++)
-	{
-		writeDebugStream("%d ", ourWay[i]);
-	}
-
+	writeDebugStreamLine("Time: %d", time1[T1] / 1000);
 }

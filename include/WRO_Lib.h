@@ -6,7 +6,7 @@
 #include "hitechnic-colour-v2.h"
 
 #define BLACK 15
-#define WHITE 69
+#define WHITE 67
 #define GREY 40
 #define TURN 253
 #define TURNAROUND 505
@@ -22,9 +22,9 @@ short pauseCounter = 0;
 short stdPower, lineMaxPower, zonePower;
 short location, old_location;
 short sensors = 0;
-short indDoms[3][2] = {{0,1}, {-1,-1}, {-1,-1}}; // indDoms[0][0] - color index of first indicator in first dom, etc.
-short nInds[3] = {1, 1, 0}; // nInds[0] - num of blue indicators, etc.
-short bricksInRobot[4] = {-2, 0, -1, 0}; // bricksInRobot[0] - color index of bricks in hapuga, [1] - on hapuga, [2] - in zahvat, [3] - on zahvat
+short indDoms[3][2] = {{-1,1}, {-1,-1}, {-1,-1}}; // indDoms[0][0] - color index of first indicator in first dom, etc.
+short nInds[3] = {0, 0, 0}; // nInds[0] - num of blue indicators, etc.
+short bricksInRobot[4] = {-2, -2, -2, -2}; // bricksInRobot[0] - color index of bricks in hapuga, [1] - on hapuga, [2] - in zahvat, [3] - on zahvat
 short exColor;
 short zahvatPos = 0, hap = 2;
 string ifCrossAkkum = "cross";
