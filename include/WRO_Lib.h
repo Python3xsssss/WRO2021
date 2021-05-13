@@ -6,13 +6,13 @@
 #include "hitechnic-colour-v2.h"
 
 #define BLACK 15
-#define WHITE 56
+#define WHITE 69
 #define GREY 40
 #define TURN 253
 #define TURNAROUND 505
 #define ONEMOTORTURN 505
-#define CROSS_ENC 100
-#define SPEC_DIFF 75
+#define CROSS_ENC 75
+#define SPEC_DIFF 60
 #define HAPUGAM 25
 #define ZAHVATG 30
 #define HAPUGAG 64
@@ -22,11 +22,14 @@ short pauseCounter = 0;
 short stdPower, lineMaxPower, zonePower;
 short location, old_location;
 short sensors = 0;
-short indDoms[3][2] = {{-1,-1}, {-1,-1}, {-1,-1}}; // indDoms[0][0] - color index of first indicator in first dom, etc.
-short nInds[3] = {0, 0, 0}; // nInds[0] - num of blue indicators, etc.
+short indDoms[3][2] = {{0,1}, {-1,-1}, {-1,-1}}; // indDoms[0][0] - color index of first indicator in first dom, etc.
+short nInds[3] = {1, 1, 0}; // nInds[0] - num of blue indicators, etc.
 short bricksInRobot[4] = {-2, 0, -1, 0}; // bricksInRobot[0] - color index of bricks in hapuga, [1] - on hapuga, [2] - in zahvat, [3] - on zahvat
 short exColor;
 short zahvatPos = 0, hap = 2;
+string ifCrossAkkum = "cross";
+short nEncB = 0;
+short nEncC = 0;
 float k1, k2;
 tHTCS2 colorSensor;
 
@@ -107,7 +110,7 @@ void moving(short speed, char dir)
 {
 	if(dir=='f')
 	{
-		motor[motorB]=speed;
+		motor[motorB]=(speed >= zonePower) ? speed* 0.95 : speed;
 		motor[motorC]=-speed;
 	}
 	if(dir=='b')
@@ -648,6 +651,10 @@ void perebros(short speed)
 
 void akkumGB()
 {
+	if(ifCrossAkkum == "cross")
+	{
+		move_enc(CROSS_ENC, stdPower, 'f', "stop");
+	}
 	motor[motorA]=-60;
 	wait10Msec(25);
 	motor[motorA]=0;
@@ -667,13 +674,13 @@ void akkum_std()
 		hapuga('d');
 		hapuga('m');
 	}
-	else
-	{
-		LineCross(stdPower, "");
-	}
 	stopmotor();
-	move_enc(TURNAROUND, stdPower, 'l', "stop");
-	move_enc(90+CROSS_ENC, 15, 'b', "stop");
+	if(ifCrossAkkum == "cross")
+	{
+		move_enc(TURNAROUND, stdPower, 'l', "stop");
+		move_enc(CROSS_ENC, stdPower, 'b', "");
+	}
+	move_enc(85, stdPower, 'b', "stop");
 	zahvat('o');
 	zahvat('c');
 	fwd_black(1, stdPower, "");

@@ -23,7 +23,7 @@ void stapt()
 	motor[motorD]=-25;
 	move_enc(240, stdPower, 'f', "");
 	Line1Cross(zonePower, "");
-	povleft(stdPower, "cross");
+	//povleft(stdPower, "cross");
 }
 
 void mainProgram()
@@ -42,14 +42,14 @@ task main()
 	hapuga('d');
 	allocation(0);
 	//stapt();
+	//checkDom1();
+	//checkExcess();
 	//mainProgram();
-	writeDebugStreamLine("Time: %d", time1[T1] / 1000);
-	//for(short i=0; i<3; i++)
-	//{
-	//	for(short j=0; j<4; j++)
-	//	{
-	//		writeDebugStream("%d ", finalRazvoz[i][j]);
-	//	}
-	//}
+	//writeDebugStreamLine("Time: %d", time1[T1] / 1000);
+	writeDebugStream("ourWay: ");
+	for(short i=0; i<3; i++)
+	{
+		writeDebugStream("%d ", ourWay[i]);
+	}
 
 }
