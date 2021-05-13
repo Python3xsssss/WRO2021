@@ -12,26 +12,6 @@ short ourCrosses[5];
 short finalRazvoz[4][4];
 short virtualBricks[4];
 short withoutZone = 0;
-//enum zones{smth};
-
-/*
-short sw;
-switch (sw)
-{
-case 1:
-//do smth
-break;
-case 2:
-//do smth
-break;
-case 3:
-//do smth
-break;
-default:
-//do smth
-break;
-}
-*/
 
 void checkDom(short dom)
 {
@@ -173,6 +153,7 @@ void calcDom(short dom)
 
 void putInDom(short hapuga1, short hapuga2, short zahvat1, short zahvat2, short dom, short col)
 {
+	bool ifBack = false;
 	if(indDoms[dom][0] == -1 && indDoms[dom][1] == -1)
 	{
 		LineRed(stdPower, "stop");
@@ -182,10 +163,12 @@ void putInDom(short hapuga1, short hapuga2, short zahvat1, short zahvat2, short 
 		if(hapuga1 == 0 && hapuga2 == 0)
 		{
 			povleft(stdPower, "cross");
+			ifBack = true;
 		}
 		else
 		{
 			povright(stdPower, "cross");
+			startTask(hapugaU);
 		}
 	}
 	else
@@ -193,104 +176,58 @@ void putInDom(short hapuga1, short hapuga2, short zahvat1, short zahvat2, short 
 		if(col == 0)
 		{
 			calcDom(dom);
-			hapuga1 = finalRazvoz[dom][0]; hapuga2 = finalRazvoz[dom][1]; zahvat1 = finalRazvoz[dom][2]; zahvat2 = finalRazvoz[dom][3];
+			hapuga1 = finalRazvoz[dom][0]; hapuga2 = finalRazvoz[dom][1];
+			zahvat1 = finalRazvoz[dom][2]; zahvat2 = finalRazvoz[dom][3];
 		}
-	}
-
-	zahvatPos = 0;
-	if(hapuga1 != 1 && hapuga2 == 1)
-	{
-		hapuga('d');
-	}
-	if(hapuga1 == 1)
-	{
-		hapuga('u');
-		bricksInRobot[0] = -2;
-	}
-
-	if(hapuga1 != 0 || hapuga2 != 0 || col == 1)
-	{
-		LineRed(zonePower, "stop");
-	}
-
-	if(hapuga1 == 1 || hapuga2 == 1)
-	{
-		move_enc(220, stdPower, 'b', "stop");
-	}
-
-	if(hapuga2 == 1 && hapuga1 == 1)
-	{
-		hapuga('d');
-		LineRed(stdPower, "stop");
-		move_enc(110, stdPower, 'b', "stop");
-	}
-
-	if(hapuga2 == 1)
-	{
-		bricksInRobot[1] = -2;
-		startTask(hapugaM);
-	}
-
-	if(hapuga1 == 0 && hapuga2 == 0)
-	{
-		move_enc(35, stdPower, 'b', "stop");
-	}
-
-	if(hapuga1 != 0 || hapuga2 != 0)
-	{
-		move_enc(TURNAROUND, 20, 'l', "stop");
-	}
-
-	if(zahvat1 == 1 || zahvat2 == 1)
-	{
-		Line_enc(100, stdPower, "stop");
-		zahvat('m');
-	}
-
-	if(zahvat1 != zahvat2)
-	{
-		if(zahvat1 == 1)
-		{
-			zahvat('o');
-			move_enc(160, stdPower, 'b', "stop");
-			bricksInRobot[2] = -2;
-		}
-		else
-		{
-			bricksInRobot[3] = -2;
-		}
-	}
-
-	if(zahvat1 == 1 && zahvat2 == 1)
-	{
-		zahvat('o');
-		Line_enc(220, stdPower, "stop");
-		zahvat('m');
-		move_enc(220, stdPower, 'b', "stop");
-		bricksInRobot[2] = -2;
-		bricksInRobot[3] = -2;
-	}
-
-	if(dom == 1)
-	{
-		if(hapuga1 == 0)
+		if (hapuga1)
 		{
 			startTask(hapugaU);
 		}
+		line_enc(180,stdPower, "");
 	}
-	else
+
+	if (hapuga1)
 	{
-		startTask(hapugaDM);
+		nMotorEncoder[motorB]=0;
+		LineRed(stdPower,"stop");
+		move_enc(nMotorEncoder[motorB],stdPower,'b',"stop");
 	}
-	LineCross(zonePower, "");
-	if(bricksInRobot[3] == 1)
+	if (hapuga2)
 	{
-		stopmotor();
+		startTask(hapugaD);
+		nMotorEncoder[motorB]=0;
+		LineRed(stdPower,"stop");
+		move_enc(nMotorEncoder[motorB],stdPower,'b',"stop");
 	}
-	startTask(zahvatC);
-	writeDebugStream("bricksInRobot: ");
-	for (int j = 0; j < 4; j++)
-		writeDebugStream("%d ", bricksInRobot[j]);
+	if (zahvat1)
+	{
+		if (!hapuga1 && !hapuga2)
+			stopmotor();
+		if (!ifBack)
+			povleft(stdPower,"");
+		startTask(zahvatO);
+		move_enc(100,stdPower,'b',"stop");
+		move_enc(100,stdPower,'f',"stop");
+	}
+	if (zahvat2)
+	{
+		if (!hapuga1 && !hapuga2 && !zahvat1)
+			stopmotor();
+		if (!zahvat1 && !ifBack)
+		{
+			povleft(stdPower,"");
+			startTask(zahvatM);
+		}
+		else
+		{
+			startTask(zahvatC);
+		}
+		move_enc(100,stdPower,'b',"stop");
+		move_enc(100,stdPower,'f',"stop");
+	}
+	if (!zahvat1 && !zahvat2)
+		povright(stdPower,"");
+	LineCross(stdPower,"");
 }
 
 
