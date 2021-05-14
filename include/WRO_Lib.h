@@ -22,9 +22,10 @@ short pauseCounter = 0;
 short stdPower, lineMaxPower, zonePower;
 short location, old_location;
 short sensors = 0;
-short indDoms[3][2] = {{-1,1}, {-1,-1}, {-1,-1}}; // indDoms[0][0] - color index of first indicator in first dom, etc.
+short indDoms[3][2] = {{-1,-1}, {-1,-1}, {-1,-1}}; // indDoms[0][0] - color index of first indicator in first dom, etc.
 short nInds[3] = {0, 0, 0}; // nInds[0] - num of blue indicators, etc.
 short bricksInRobot[4] = {-2, -2, -2, -2}; // bricksInRobot[0] - color index of bricks in hapuga, [1] - on hapuga, [2] - in zahvat, [3] - on zahvat
+short finalRazvoz[4][4] = {{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}};
 short exColor;
 short zahvatPos = 0, hap = 2;
 string ifCrossAkkum = "cross";
@@ -489,37 +490,30 @@ void mot1_enc(short enc, char portMotor, short speed, char dir, const string ifS
 	}
 }
 
-//void lineToLine()
-//{
-//	if(sensors == 0)
-//	{
-//		mot1_enc(LINETOLINE, 'b', stdPower, 'f', "stop");
-//		mot1_enc(LINETOLINE, 'c', stdPower, 'f', "stop");
-//		sensors = 1;
-//	}
-//	else
-//	{
-//		mot1_enc(LINETOLINE, 'c', stdPower, 'f', "stop");
-//		mot1_enc(LINETOLINE, 'b', stdPower, 'f', "stop");
-//		sensors = 0;
-//	}
-//}
-
 void hapuga(char dir)
 {
-	if(dir=='u')
+	short speed;
+	if(bricksInRobot[1] > -2)
 	{
-		motor[motorA]=20;
-		wait10Msec(55);
+		speed = 18;
+	}
+	else
+	{
+		speed = 30;
+	}
+	if(dir=='u' && hap != 2)
+	{
+		motor[motorA]=speed;
+		wait10Msec(1000/speed);
 		hap = 2;
 	}
-	if(dir=='d')
+	if(dir=='d' && hap != 0)
 	{
-		motor[motorA]=-30;
-		wait10Msec(65);
+		motor[motorA]=-speed;
+		wait10Msec(2000/speed);
 		hap = 0;
 	}
-	if(dir ==  'm')
+	if(dir == 'm' && hap != 1)
 	{
 		motor[motorA]=15;
 		wait10Msec(20);
@@ -553,7 +547,7 @@ void zahvat(char dir)
 		if(zahvatPos != 0)
 		{
 			motor[motorD]=-speed;
-			wait10Msec(4200/speed);
+			wait10Msec((3000 + 500 * zahvatPos)/speed);
 		}
 		zahvatPos = 0;
 	}
@@ -630,6 +624,11 @@ task zahvatO()
 	zahvat('o');
 }
 
+task zahvatM()
+{
+	zahvat('m');
+}
+
 task zahvatCor()
 {
 	motor[motorD]=-30;
@@ -653,26 +652,31 @@ void akkumGB()
 {
 	if(ifCrossAkkum == "cross")
 	{
-		move_enc(CROSS_ENC, stdPower, 'f', "stop");
+		move_enc(CROSS_ENC + 25, stdPower, 'f', "stop");
 	}
-	motor[motorA]=-60;
-	wait10Msec(25);
+	wait1Msec(250);
+	motor[motorA]=-35;
+	wait1Msec(500);
 	motor[motorA]=0;
 	while(SensorValue[S2] > BLACK)
 	{
 		moving(stdPower, 'b');
 	}
-	stopmotor();
+	move_enc(40, stdPower, 'f', "stop");
+	hap = 1;
 	hapuga('u');
 	bricksInRobot[1] = -2;
+	for(short i = 0; i < 4; i++)
+		finalRazvoz[3][i] = 0;
+	writeDebugStreamLine("Time after akkum: %d sec", time1[T1] / 1000);
 }
 
 void akkum_std()
 {
-	if(indDoms[2][0] != -1 || indDoms[2][1] != -1)
+	if(hap == 2 && bricksInRobot[0] != -2)
 	{
 		hapuga('d');
-		hapuga('m');
+		startTask(hapugaM);
 	}
 	stopmotor();
 	if(ifCrossAkkum == "cross")
@@ -682,13 +686,21 @@ void akkum_std()
 	}
 	move_enc(85, stdPower, 'b', "stop");
 	zahvat('o');
-	zahvat('c');
-	fwd_black(1, stdPower, "");
+	startTask(zahvatC);
+	wait1msec(750);
+	fwd_black(1, stdPower, "stop"); //"" !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
 	bricksInRobot[2] = -2;
+	for(short i = 0; i < 4; i++)
+		finalRazvoz[3][i] = 0;
+	writeDebugStreamLine("Time after akkum: %d sec", time1[T1] / 1000);
 }
 
 void crosses(short destination, const string ifStop)
 {
+	if(location == destination)
+	{
+		return;
+	}
 	if(destination % 2 == 0 && destination < location || destination % 2 != 0 && destination > location)
 	{
 		for(short i = 0; i < abs(destination - location)/2 + abs(destination - location) % 2; i++)

@@ -26,31 +26,30 @@ void stapt()
 	//povleft(stdPower, "cross");
 }
 
+void finish()
+{
+	//finish ne rabotaet,
+	//tk po priezdu v dom = 0 bez kubikov mi povorachivaem k domu,
+	//a esli mi vigruzili poslednie cubiki v etom dome, to mi doezhaem do perekrestka s glavnoy liniey i smotrim perpendikularno ey
+	//popravit', esli voobshe finish budem uspevat. Esli net, to udalit' ego iz progi.
+	mot1_enc(ONEMOTORTURN * 80 / 90, 'c', zonePower, 'f', "stop");
+	move_enc(1000, lineMaxPower, 'f', "stop");
+}
+
+
 void mainProgram()
 {
+	init();
 	stapt();
 	checkAllField();
 	allocateAllBricks();
+	//finish();
 }
 
 task main()
 {
 	clearTimer(T1);
 	clearDebugStream();
-	init();
-	location = 8;
-	//move_to(2, "turn", "turn");
-	//takeYellowZone();
-	bricksInRobot[0] = 2; bricksInRobot[2] = 2; bricksInRobot[1] = -2; bricksInRobot[3] = -2;
-	indDoms[0][0] = 1; indDoms[0][1] = 0;
-	indDoms[1][0] = 1; indDoms[1][1] = -1;
-	indDoms[2][0] = 2; indDoms[2][1] = 0;
-	nInds[2] = 1;
-	hapuga('d');
-	allocation(1);
-	//stapt();
-	//checkDom1();
-	//checkExcess();
-	//mainProgram();
-	writeDebugStreamLine("Time: %d", time1[T1] / 1000);
+	mainProgram();
+	writeDebugStreamLine("Time: %d seconds", time1[T1] / 1000);
 }
