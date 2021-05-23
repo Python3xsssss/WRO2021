@@ -125,6 +125,8 @@ void take_yellow_ex()
 
 	fwd_black(1, stdPower, "");
 	povright(stdPower, "cross");
+	Line_enc(100, stdPower, "");
+	LineCross(stdPower, "stop");
 }
 
 void take_green_ex()
@@ -139,9 +141,12 @@ void take_green_ex()
 	move_enc(TURNAROUND, stdPower, 'l', "stop");
 	move_enc(200, stdPower, 'b', "stop");
 	zahvat('c');
-	move_enc(TURNAROUND, stdPower, 'l', "stop");
+	move_enc(TURNAROUND+18, stdPower, 'l', "stop");
+	fwd_white(3, stdPower, "");
 	fwd_black(3, stdPower, "");
 	povright(stdPower, "cross");
+	Line_enc(75, stdPower, "");
+	LineCross(stdPower, "stop");
 }
 
 
@@ -160,11 +165,7 @@ void take_blue_ex()
 	{
 		motor[motorB]=-stdPower;
 	}
-	while(SensorValue[S1]>WHITE-5)
-	{
-		motor[motorB]=-stdPower;
-	}
-	stopmotor();
+	mot1_enc(92, 'b', stdPower, 'b', "stop");
 	move_enc(200, stdPower, 'b', "stop");
 	zahvat('c');
 	move_enc(TURNAROUND, stdPower, 'l', "stop");
@@ -176,21 +177,25 @@ void take_blue_ex()
 	fwd_white(1, zonePower, "");
 	fwd_black(1, stdPower, "");
 	povleft(stdPower, "cross");
+	Line_enc(75, stdPower, "");
+	Line_enc(200, lineMaxPower, "");
+	LineCross(stdPower, "stop");
 }
 
 void checkExcess()
 {
 	exColor = 1;
 	LineCross(stdPower, "");
-	Line_enc(285, stdPower, "stop");
+	Line_enc(295, stdPower, "stop");
+	move_enc(TURN, stdPower, 'l', "");
 	startTask(checkY);
-	move_enc(TURNAROUND+25, stdPower, 'l', "");
+	move_enc(TURN+25, stdPower, 'l', "");
 	stopTask(checkY);
 
 	if(exColor == 2)
 	{
 		stopmotor();
-		move_enc(TURN+60, stdPower, 'r', "stop");
+		move_enc(TURN+38, stdPower, 'r', "stop");
 		take_yellow_ex();
 		LineCross(stdPower, "stop");
 		return;
@@ -198,9 +203,9 @@ void checkExcess()
 
 	move_enc(TURNAROUND-40, stdPower, 'l', "stop");
   Line_enc(40,stdPower,"");
-	Line_enc(600, lineMaxPower, "");
+	Line_enc(620, lineMaxPower, "");
 	LineCross(stdPower, "");
-	Line_enc(20, stdPower, "stop");
+	Line_enc(15, stdPower, "stop");
 	mot1_enc(ONEMOTORTURN, 'b', stdPower, 'f', "stop");
 	nMotorEncoder[motorB]=0;
 	if (!pass_any(400, stdPower))
@@ -232,7 +237,7 @@ void approachToBlueNew()
 	Line1_enc(360, stdPower, "stop");
 	perebros(stdPower);
 	Line1Cross(zonePower, "stop");
-	move_enc(24, stdPower, 'b', "stop");
+	move_enc(35, stdPower, 'b', "stop");
 	move_enc(TURN, stdPower, 'l', "stop");
 }
 

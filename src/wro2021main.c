@@ -32,24 +32,33 @@ void finish()
 	//tk po priezdu v dom = 0 bez kubikov mi povorachivaem k domu,
 	//a esli mi vigruzili poslednie cubiki v etom dome, to mi doezhaem do perekrestka s glavnoy liniey i smotrim perpendikularno ey
 	//popravit', esli voobshe finish budem uspevat. Esli net, to udalit' ego iz progi.
-	mot1_enc(ONEMOTORTURN * 80 / 90, 'c', zonePower, 'f', "stop");
-	move_enc(1000, lineMaxPower, 'f', "stop");
+	motor[motorD]=-50;
+	motor[motorA]=50;;
+	move_to(0, "turn", "");
+	//mot1_enc(ONEMOTORTURN * 80 / 90, 'c', zonePower, 'f', "stop");
+	move_enc(TURN-5, stdPower, 'r', "stop");
+	moving(lineMaxPower, 'f');
+	wait10Msec(270);
+	stopmotor();
+	move_enc(35, stdPower, 'b', "stop");
 }
 
 
 void mainProgram()
 {
-	init();
 	stapt();
 	checkAllField();
 	allocateAllBricks();
-	//finish();
+	finish();
 }
 
 task main()
 {
+	/*!!NE ZABIVAY INIT!!*/
 	clearTimer(T1);
 	clearDebugStream();
+	init();
 	mainProgram();
 	writeDebugStreamLine("Time: %d seconds", time1[T1] / 1000);
+
 }

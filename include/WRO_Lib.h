@@ -6,13 +6,14 @@
 #include "hitechnic-colour-v2.h"
 
 #define BLACK 15
-#define WHITE 67
+#define WHITE 57
 #define GREY 40
 #define TURN 253
 #define TURNAROUND 505
 #define ONEMOTORTURN 505
-#define CROSS_ENC 75
-#define SPEC_DIFF 60
+#define CROSS_ENC 90
+#define SPEC_CROSS_L 25
+#define SPEC_CROSS_R 150
 #define HAPUGAM 25
 #define ZAHVATG 30
 #define HAPUGAG 64
@@ -103,7 +104,7 @@ void stopmotor()
 {
 	motor[motorB]=0;
 	motor[motorC]=0;
-	wait10Msec(30);
+	wait10Msec(20);
 	pauseCounter++;
 }
 
@@ -138,32 +139,28 @@ void move_enc(short enc, short speed, char dir, const string ifStop)
 	{
 		while(nMotorEncoder[motorB]<enc)
 		{
-			motor[motorB]=speed;
-			motor[motorC]=-speed;
+			moving(speed, 'f');
 		}
 	}
 	if(dir=='b')
 	{
 		while(nMotorEncoder[motorB]>-enc)
 		{
-			motor[motorB]=-speed;
-			motor[motorC]=speed;
+			moving(speed, 'b');
 		}
 	}
 	if(dir=='l')
 	{
 		while(nMotorEncoder[motorB]<enc)
 		{
-			motor[motorB]=speed;
-			motor[motorC]=speed;
+			moving(speed, 'l');
 		}
 	}
 	if(dir=='r')
 	{
 		while(nMotorEncoder[motorB]>-enc)
 		{
-			motor[motorB]=-speed;
-			motor[motorC]=-speed;
+			moving(speed, 'r');
 		}
 	}
 	if (ifStop == "stop" || ifStop == "Stop" || ifStop == "STOP")
@@ -268,7 +265,7 @@ void Line1Cross(short speed, const string ifStop)
 
 void lineWhite(short speed, const string ifStop)
 {
-	while(SensorValue[S1]<WHITE)
+	while(SensorValue[S1]<WHITE+3)
 	{
 		Line(speed);
 	}
@@ -376,17 +373,16 @@ void fwd_white(short SensorPort, short speed, const string ifStop)
 
 bool pass_color(short nEnc, short speed)
 {
+	moving(speed, 'f');
+	readSensor(&colorSensor);
 	while(colorSensor.color>0)
 	{
 		readSensor(&colorSensor);
-		moving(speed, 'f');
 	}
-
 	nMotorEncoder[motorB]=0;
 	while(colorSensor.color != 2 && colorSensor.color != 3 && colorSensor.color != 4 && colorSensor.color != 6)
 	{
 		readSensor(&colorSensor);
-		moving(speed, 'f');
 		if (SensorValue[S2] < BLACK && SensorValue[S3] < BLACK || nMotorEncoder[motorB] >= nEnc)
 		{
 			return false;
@@ -397,17 +393,17 @@ bool pass_color(short nEnc, short speed)
 
 bool back_pass_color(short nEnc, short speed)
 {
+	moving(speed, 'b');
+	readSensor(&colorSensor);
 	while(colorSensor.color > 0)
 	{
 		readSensor(&colorSensor);
-		moving(speed, 'b');
 	}
 
 	nMotorEncoder[motorB]=0;
 	while(colorSensor.color != 2 && colorSensor.color != 3 && colorSensor.color != 4 && colorSensor.color != 6)
 	{
 		readSensor(&colorSensor);
-		moving(speed, 'b');
 		if (nMotorEncoder[motorB] <= -nEnc)
 		{
 			return false;
@@ -495,7 +491,7 @@ void hapuga(char dir)
 	short speed;
 	if(bricksInRobot[1] > -2)
 	{
-		speed = 18;
+		speed = 16;
 	}
 	else
 	{
@@ -534,11 +530,11 @@ void zahvat(char dir)
 	short speed;
 	if(bricksInRobot[3] > -2)
 	{
-		speed = 18;
+		speed = 14;
 	}
 	else
 	{
-		speed = 30;
+		speed = 40;
 	}
 
 	nMotorEncoder[motorD]=0;
@@ -641,10 +637,10 @@ void perebros(short speed)
 	hapuga('u');
 	startTask(zahvatO);
 	move_enc(200, speed, 'b', "stop");
-	move_enc(TURNAROUND+14, speed, 'l', "stop");
+	move_enc(TURNAROUND+25, speed, 'l', "stop");
 	move_enc(200, speed, 'b', "stop");
 	zahvat('c');
-	move_enc(TURNAROUND+30, stdPower, 'r', "stop");
+	move_enc(TURNAROUND+38, stdPower, 'r', "stop");
 	bricksInRobot[0] = -2; bricksInRobot[2] = -1;
 }
 
@@ -652,8 +648,9 @@ void akkumGB()
 {
 	if(ifCrossAkkum == "cross")
 	{
-		move_enc(CROSS_ENC + 25, stdPower, 'f', "stop");
+		move_enc(CROSS_ENC, stdPower, 'f', "");
 	}
+	move_enc(38, stdPower, 'f', "stop");
 	wait1Msec(250);
 	motor[motorA]=-35;
 	wait1Msec(500);
@@ -684,10 +681,10 @@ void akkum_std()
 		move_enc(TURNAROUND, stdPower, 'l', "stop");
 		move_enc(CROSS_ENC, stdPower, 'b', "");
 	}
-	move_enc(85, stdPower, 'b', "stop");
+	move_enc(110, stdPower, 'b', "stop");
 	zahvat('o');
 	startTask(zahvatC);
-	wait1msec(750);
+	wait1Msec(750);
 	fwd_black(1, stdPower, "stop"); //"" !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
 	bricksInRobot[2] = -2;
 	for(short i = 0; i < 4; i++)
@@ -735,7 +732,7 @@ void crosses(short destination, const string ifStop)
 
 void povrightSpec(short speed)
 {
-	move_enc(CROSS_ENC+SPEC_DIFF, speed, 'f', "stop");
+	move_enc(SPEC_CROSS_R, speed, 'f', "stop");
 	if((hap == 1 && bricksInRobot[1] == 1) || (hap == 2 && bricksInRobot[0] == 1))
 	{
 		stdPower = 18;
@@ -756,7 +753,7 @@ void povrightSpec(short speed)
 
 void povleftSpec(short speed)
 {
-	move_enc(CROSS_ENC-SPEC_DIFF, speed, 'f', "stop");
+	move_enc(SPEC_CROSS_L, speed, 'f', "stop");
 	if((hap == 1 && bricksInRobot[1] == 1) || (hap == 2 && bricksInRobot[0] == 1))
 	{
 		stdPower = 18;
@@ -821,7 +818,6 @@ void turning(short destination)
 			povleftSpec(stdPower);
 		}
 	}
-	stdPower = 25;
 }
 
 #endif
