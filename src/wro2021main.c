@@ -33,16 +33,15 @@ void finish()
 	//a esli mi vigruzili poslednie cubiki v etom dome, to mi doezhaem do perekrestka s glavnoy liniey i smotrim perpendikularno ey
 	//popravit', esli voobshe finish budem uspevat. Esli net, to udalit' ego iz progi.
 	motor[motorD]=-50;
-	motor[motorA]=50;;
+	motor[motorA]=50;
 	move_to(0, "turn", "");
 	//mot1_enc(ONEMOTORTURN * 80 / 90, 'c', zonePower, 'f', "stop");
-	move_enc(TURN-5, stdPower, 'r', "stop");
+	move_enc(TURN-3, stdPower, 'r', "stop");
 	moving(lineMaxPower, 'f');
 	wait10Msec(270);
 	stopmotor();
-	move_enc(35, stdPower, 'b', "stop");
+	move_enc(25, stdPower, 'b', "stop");
 }
-
 
 void mainProgram()
 {

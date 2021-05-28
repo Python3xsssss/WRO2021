@@ -163,9 +163,9 @@ void putInDom(short hapuga1, short hapuga2, short zahvat1, short zahvat2, short 
 	{
 		startTask(hapugaD);
 		nMotorEncoder[motorB]=0;
-		Line_enc(120, stdPower, "stop");
+		Line_enc(160, stdPower, "stop");
 		wait1Msec(250);
-		move_enc(130, stdPower,'b',"stop");
+		move_enc(160, stdPower,'b',"stop");
 		bricksInRobot[1] = -2;
 	}
 	if (zahvat1)
@@ -230,7 +230,7 @@ void putInDom(short hapuga1, short hapuga2, short zahvat1, short zahvat2, short 
 
 	if (dom == 1)
 	{
-		Line_enc(400, zonePower, "");
+		Line_enc(375, zonePower, "");
 	}
 
 	LineCross(stdPower, "stop");
@@ -240,7 +240,7 @@ void putInDom(short hapuga1, short hapuga2, short zahvat1, short zahvat2, short 
 		wait1Msec(150);
 	startTask(zahvatC);
 	if (bricksInRobot[3] != -2 && zahvatPos != 0)
-		wait1Msec(1300);
+		wait1Msec(1800);
 }
 
 
@@ -590,22 +590,22 @@ void takeBlueZone()
 	move_enc(175, stdPower, 'f', "stop");
 	mot1_enc(ONEMOTORTURN, 'b', stdPower, 'b', "stop");
 
-	move_enc(160, stdPower, 'f', "stop");
+	move_enc(140, stdPower, 'f', "stop");
 	bricksInRobot[1] = 0;
 	hapuga('u');
-	move_enc(145,stdPower,'b',"stop");
+	move_enc(110,stdPower,'b',"stop");
 
 	move_enc(250,stdPower,'r',"stop");
 	fwd_white(3,stdPower,"");
 	fwd_black(3, stdPower, "");
 
 	move_enc(240, stdPower, 'f', "stop");
-	move_enc(TURN+5, stdPower, 'r', "stop");
+	move_enc(TURN+3, stdPower, 'r', "stop");
 
 	startTask(zahvatM);
 	move_enc(50, stdPower, 'f', "stop");
 	//zahvat('m');
-	move_enc(130, stdPower, 'b', "stop");
+	move_enc(118, stdPower, 'b', "stop");
 
 	bricksInRobot[3] = 0;
 	startTask(zahvatC);

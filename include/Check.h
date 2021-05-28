@@ -17,7 +17,7 @@ task checkY()
 	exColor = 2;
 }
 
-int check_color()
+int check_color(short dom)
 {
 	if (colorSensor.color==2)
 	{
@@ -38,9 +38,19 @@ int check_color()
 	{
 		playSound(soundBlip);
 		nEncB = nMotorEncoder[motorB];
-		while(nMotorEncoder[motorB] > nEncB - 15)
+		if(dom != 0)
 		{
-			moving(stdPower, 'b');
+			while(nMotorEncoder[motorB] > nEncB - 15)
+			{
+				moving(stdPower, 'b');
+			}
+		}
+		else
+		{
+			while(nMotorEncoder[motorB] < nEncB + 15)
+			{
+				moving(stdPower, 'f');
+			}
 		}
 		if(colorSensor.color == 4)
 		{
@@ -65,6 +75,7 @@ void check_ind(short dom, short nEnc1, short nEnc2)
 	for (int i = 0; i < 2; i++)
 	{
 		short enc = (i == 0) ? nEnc1 : nEnc2;
+		char dir;
 		if(dom != 0)
 		{
 			back_pass_color(enc, stdPower);
@@ -73,8 +84,7 @@ void check_ind(short dom, short nEnc1, short nEnc2)
 		{
 			pass_color(enc, stdPower);
 		}
-
-		short color_index = check_color();
+		short color_index = check_color(dom);
 		if (color_index != -1)
 		{
 			nInds[color_index]++;
@@ -85,9 +95,9 @@ void check_ind(short dom, short nEnc1, short nEnc2)
 
 /*
 if (smth == true)
-	variable = a;
+variable = a;
 else
-	variable = b;
+variable = b;
 
 variable = (smth == true) ? a : b;
 */
@@ -133,7 +143,7 @@ void take_green_ex()
 {
 	move_enc(5, stdPower, 'f', "stop");
 	move_enc(TURN, stdPower, 'r', "stop");
-	move_enc(160, stdPower, 'f', "stop");
+	move_enc(170, stdPower, 'f', "stop");
 	wait1Msec(50);
 	startTask(zahvatO);
 	hapuga('d');
@@ -153,10 +163,7 @@ void take_green_ex()
 void take_blue_ex()
 {
 	startTask(zahvatO);
-	while(SensorValue[S1]<WHITE)
-	{
-		motor[motorB]=-stdPower;
-	}
+	mot1_enc(200, 'b', stdPower, 'b', "");
 	while(SensorValue[S1]>BLACK)
 	{
 		motor[motorB]=-stdPower;
@@ -165,7 +172,7 @@ void take_blue_ex()
 	{
 		motor[motorB]=-stdPower;
 	}
-	mot1_enc(92, 'b', stdPower, 'b', "stop");
+	mot1_enc(82, 'b', stdPower, 'b', "stop");
 	move_enc(200, stdPower, 'b', "stop");
 	zahvat('c');
 	move_enc(TURNAROUND, stdPower, 'l', "stop");
@@ -202,10 +209,10 @@ void checkExcess()
 	}
 
 	move_enc(TURNAROUND-40, stdPower, 'l', "stop");
-  Line_enc(40,stdPower,"");
+	Line_enc(40,stdPower,"");
 	Line_enc(620, lineMaxPower, "");
 	LineCross(stdPower, "");
-	Line_enc(15, stdPower, "stop");
+	Line_enc(7, stdPower, "stop");
 	mot1_enc(ONEMOTORTURN, 'b', stdPower, 'f', "stop");
 	nMotorEncoder[motorB]=0;
 	if (!pass_any(400, stdPower))
