@@ -28,19 +28,35 @@ void stapt()
 
 void finish()
 {
-	//finish ne rabotaet,
-	//tk po priezdu v dom = 0 bez kubikov mi povorachivaem k domu,
-	//a esli mi vigruzili poslednie cubiki v etom dome, to mi doezhaem do perekrestka s glavnoy liniey i smotrim perpendikularno ey
-	//popravit', esli voobshe finish budem uspevat. Esli net, to udalit' ego iz progi.
 	motor[motorD]=-50;
 	motor[motorA]=50;
-	move_to(0, "turn", "");
-	//mot1_enc(ONEMOTORTURN * 80 / 90, 'c', zonePower, 'f', "stop");
-	move_enc(TURN-3, stdPower, 'r', "stop");
+	if(location == 5)
+		move_to(4, "turn", "");
+
+	if(location == 4)
+	{
+		Line_enc(100, stdPower, "");
+		Line_enc(1750, lineMaxPower, "");
+		LineCross(stdPower, "stop");
+	}
+
+	else
+		move_to(0, "turn", "");
+
+	//move_enc(TURN-18, stdPower, 'r', "stop");
+	povright(stdPower, "cross");
+	LineCross(stdPower, "stop");
+	mot1_enc(50, 'b', stdPower, 'f', "stop");
+	mot1_enc(50, 'c', stdPower, 'f', "stop");
 	moving(lineMaxPower, 'f');
-	wait10Msec(270);
+	wait10Msec(100);
 	stopmotor();
-	move_enc(25, stdPower, 'b', "stop");
+	move_enc(35, stdPower, 'b', "stop");
+
+	while(true)
+	{
+		wait10Msec(100);
+	}
 }
 
 void mainProgram()

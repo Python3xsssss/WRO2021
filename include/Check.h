@@ -42,26 +42,54 @@ int check_color(short dom)
 		{
 			while(nMotorEncoder[motorB] > nEncB - 15)
 			{
+				readSensor(&colorSensor);
+				if(colorSensor.color == 4)
+				{
+					playSoundFile("Green");
+					return 1;
+				}
+				if(colorSensor.color == 6)
+				{
+					playSoundFile("Yellow");
+					return 2;
+				}
 				moving(stdPower, 'b');
 			}
 		}
-		else
+		if(dom == 0)
 		{
 			while(nMotorEncoder[motorB] < nEncB + 15)
 			{
+				readSensor(&colorSensor);
+				if(colorSensor.color == 4)
+				{
+					playSoundFile("Green");
+					return 1;
+				}
+				if(colorSensor.color == 6)
+				{
+					playSoundFile("Yellow");
+					return 2;
+				}
 				moving(stdPower, 'f');
 			}
 		}
-		if(colorSensor.color == 4)
-		{
-			playSoundFile("Green");
-			return 1;
-		}
-		else
-		{
+		readSensor(&colorSensor);
+		//if(colorSensor.color == 4)
+		//{
+		//	playSoundFile("Green");
+		//	return 1;
+		//}
+		//if(colorSensor.color == 6)
+		//{
+		//	playSoundFile("Yellow");
+		//	return 1;
+		//}
+		//else
+		//{
 			playSoundFile("Blue");
 			return 0;
-		}
+		//}
 	}
 	else
 	{
@@ -75,7 +103,6 @@ void check_ind(short dom, short nEnc1, short nEnc2)
 	for (int i = 0; i < 2; i++)
 	{
 		short enc = (i == 0) ? nEnc1 : nEnc2;
-		char dir;
 		if(dom != 0)
 		{
 			back_pass_color(enc, stdPower);
@@ -104,8 +131,8 @@ variable = (smth == true) ? a : b;
 
 void checkDom1()
 {
-	move_enc(260, stdPower, 'f', "stop");
-	move_enc(TURN+10, 50, 'l', "stop");
+	move_enc(273, stdPower, 'f', "stop");
+	move_enc(TURN+5, 50, 'l', "stop");
 
 	moving(50, 'b');
 	wait10Msec(70);
@@ -123,7 +150,7 @@ void take_yellow_ex()
 	startTask(zahvatO);
 	hapuga('d');
 	move_enc(70, stdPower, 'b', "stop");
-	move_enc(TURNAROUND, stdPower, 'l', "stop");
+	move_enc(TURNAROUND-12, stdPower, 'l', "stop");
 	move_enc(260, stdPower, 'b', "stop");
 	wait10Msec(5);
 	zahvat('c');
@@ -143,7 +170,7 @@ void take_green_ex()
 {
 	move_enc(5, stdPower, 'f', "stop");
 	move_enc(TURN, stdPower, 'r', "stop");
-	move_enc(170, stdPower, 'f', "stop");
+	move_enc(165, stdPower, 'f', "stop");
 	wait1Msec(50);
 	startTask(zahvatO);
 	hapuga('d');
@@ -192,8 +219,10 @@ void take_blue_ex()
 void checkExcess()
 {
 	exColor = 1;
-	LineCross(stdPower, "");
-	Line_enc(295, stdPower, "stop");
+	LineCross(stdPower, "stop");
+	mot1_enc(200, 'b', stdPower, 'f', "stop");
+	mot1_enc(200, 'c', stdPower, 'f', "stop");
+	Line1_enc(200, stdPower, "stop");
 	move_enc(TURN, stdPower, 'l', "");
 	startTask(checkY);
 	move_enc(TURN+25, stdPower, 'l', "");
@@ -202,17 +231,20 @@ void checkExcess()
 	if(exColor == 2)
 	{
 		stopmotor();
-		move_enc(TURN+38, stdPower, 'r', "stop");
+		move_enc(TURN+33, stdPower, 'r', "stop");
 		take_yellow_ex();
 		LineCross(stdPower, "stop");
 		return;
 	}
 
 	move_enc(TURNAROUND-40, stdPower, 'l', "stop");
-	Line_enc(40,stdPower,"");
-	Line_enc(620, lineMaxPower, "");
+	Line1_enc(180, stdPower, "stop");
+	mot1_enc(200, 'c', stdPower, 'f', "stop");
+	mot1_enc(180, 'b', stdPower, 'f', "stop");
+	Line_enc(80,stdPower,"");
+	Line_enc(170, zonePower, "");
 	LineCross(stdPower, "");
-	Line_enc(7, stdPower, "stop");
+	Line_enc(15, stdPower, "stop");
 	mot1_enc(ONEMOTORTURN, 'b', stdPower, 'f', "stop");
 	nMotorEncoder[motorB]=0;
 	if (!pass_any(400, stdPower))

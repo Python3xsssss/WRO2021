@@ -15,7 +15,7 @@ short importantBricks = -2;
 
 void checkDom(short dom)
 {
-	move_enc(12, stdPower, 'b', "stop");
+	move_enc(5, stdPower, 'b', "stop");
 	while(SensorValue[S3]<WHITE)
 	{
 		motor[motorC]=stdPower;
@@ -28,7 +28,7 @@ void checkDom(short dom)
 	{
 		motor[motorC]=stdPower;
 	}
-	mot1_enc(95, 'c', stdPower, 'b', "stop");
+	mot1_enc(116, 'c', stdPower, 'b', "stop");
 	check_ind(dom, ENC1_DOM, ENC2_DOM);
 	if(dom != 0)
 	{
@@ -209,8 +209,8 @@ void putInDom(short hapuga1, short hapuga2, short zahvat1, short zahvat2, short 
 		//if (zahvat1)
 		//	wait10Msec(250);
 		wait1Msec(300);
-		//move_enc(30,stdPower,'b',"stop");
-		//move_enc(30,stdPower,'f',"stop");
+		move_enc(70,stdPower,'b',"stop");
+		move_enc(70,stdPower,'f',"stop");
 		bricksInRobot[3] = -2;
 	}
 	if (!zahvat1 && !zahvat2 && !ifBack)
@@ -498,33 +498,14 @@ void allocation(short col)
 					Line_enc(CROSS_ENC-20, stdPower, "stop");
 					startTask(hapugaU);
 					wait1Msec(250);
-					if(nInds[2] < 2)
-					{
-						povright(stdPower, "");
-					}
-					else
-					{
-						move_enc(TURN, stdPower, 'l', "stop");
-					}
+					move_enc(TURN, stdPower, 'l', "stop");
 				}
 			}
-			if(nInds[2] < 2)
-			{
-				stopmotor();
-				akkum_std();
-				if(indDoms[0][0] == 2 || indDoms[0][1] == 2)
-					povleftSpec(stdPower);
-				else
-					povleft(stdPower, "cross");
-			}
+			akkumGB();
+			if(indDoms[0][0] == 0 || indDoms[0][1] == 0 || indDoms[0][0] == -1 || indDoms[0][1] == -1)
+				povrightSpec(stdPower);
 			else
-			{
-				akkumGB();
-				if(indDoms[0][0] == 0 || indDoms[0][1] == 0 || indDoms[0][0] == -1 || indDoms[0][1] == -1)
-					povrightSpec(stdPower);
-				else
-					povright(stdPower, "cross");
-			}
+				povright(stdPower, "cross");
 		}
 		old_location = location;
 		location = ourCrosses[i];
@@ -599,13 +580,13 @@ void takeBlueZone()
 	fwd_white(3,stdPower,"");
 	fwd_black(3, stdPower, "");
 
-	move_enc(240, stdPower, 'f', "stop");
+	move_enc(230, stdPower, 'f', "stop");
 	move_enc(TURN+3, stdPower, 'r', "stop");
 
 	startTask(zahvatM);
 	move_enc(50, stdPower, 'f', "stop");
 	//zahvat('m');
-	move_enc(118, stdPower, 'b', "stop");
+	move_enc(105, stdPower, 'b', "stop");
 
 	bricksInRobot[3] = 0;
 	startTask(zahvatC);
