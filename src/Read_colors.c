@@ -65,7 +65,7 @@ task main()
 		}
 		fileClose(fileHandle);
 	}
-	wait1msec(1000);
+	wait1Msec(1000);
 
 	waitForButtonPress();
 	if (getButtonPress(LEFT_BUTTON) == 1)
@@ -79,7 +79,7 @@ task main()
 			wait1Msec(100);
 		}
 		while (getButtonPress(ENTER_BUTTON) == 0);
-		fileWriteShort(fileWB, val);
+		fileWriteShort(fileHandle, val);
 		wait1Msec(1000);
 		fileClose(fileHandle);
 		waitForButtonPress();

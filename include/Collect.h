@@ -3,29 +3,29 @@
 #ifndef CHECK_H
 #define CHECK_H
 
-#define ENC1_DOM1 160
+#define ENC1_DOM1 30
 #define ENC2_DOM1 110
 
 task checkY()
 {
 	readSensor(&colorSensor);
 	short j = 0;
-	while(j < 10 && nMotorEncoder[motorB] < 300)
+	while(j < 3 || nMotorEncoder[motorB] < 300)
 	{
 		readSensor(&colorSensor);
-		while(colorSensor.red < 5 && colorSensor.green < 5)
+		while(colorSensor.red == 0 && colorSensor.green == 0)
 		{
-			if(colorSensor.red < 5 && colorSensor.green < 5)
-				j = 0;
+			j = 0;
 
 			readSensor(&colorSensor);
 		}
-		j++
-		if(j == 10)
+		j++;
+		if(j == 3)
 		{
 			playSoundFile("Yellow");
 			exColor = 2;
 		}
+		wait10Msec(5);
 	}
 }
 
@@ -33,22 +33,22 @@ task checkG()
 {
 	readSensor(&colorSensor);
 	short j = 0;
-	while(j < 10 && nMotorEncoder[motorB] < 300)
+	while(j < 3 || nMotorEncoder[motorB] < 300)
 	{
 		readSensor(&colorSensor);
-		while(colorSensor.green < 5)
+		while(colorSensor.green < 3)
 		{
-			if(colorSensor.green < 5)
 				j = 0;
 
 			readSensor(&colorSensor);
 		}
-		j++
-		if(j == 10)
+		j++;
+		if(j == 3)
 		{
 			playSoundFile("Green");
 			exColor = 1;
 		}
+		wait10Msec(5);
 	}
 }
 
@@ -168,20 +168,52 @@ variable = (smth == true) ? a : b;
 void checkDom1()
 {
 	move_enc(273, stdPower, 'f', "stop");
-	move_enc(TURN, 50, 'r', "stop");
-
-	moving(50, 'f');
-	wait10Msec(70);
-	stopmotor();
+	move_enc(TURN, 25, 'r', "stop");
 
 	check_ind(0, ENC1_DOM1, ENC2_DOM1);
 	move_enc(TURN, stdPower, 'r', "stop");
 	fwd_black(3, zonePower, "");
-	povright(stdPower, "cross");
+	fwd_white(3, stdPower, "");
+	move_enc(TURN, stdPower, 'r', "stop");
+}
+
+bool check_yellow_ex()
+{
+	exColor = 0;
+	Line1S3Cross(stdPower, "stop");
+	startTask(checkY);
+	nMotorEncoder[motorB] = 0;
+	while(nMotorEncoder[motorB] < 300)
+	{
+		Line1S3(stdPower);
+	}
+	stopmotor();
+	if(exColor == 2)
+		return true;
+	else
+		return false;
+}
+
+bool check_green_ex()
+{
+	Line1S3_enc(80, stdPower, "");
+	Line1S3Cross(zonePower, "");
+	startTask(checkG);
+	nMotorEncoder[motorB] = 0;
+	while(nMotorEncoder[motorB] < 300)
+	{
+		Line1S3(stdPower);
+	}
+	stopmotor();
+	if(exColor == 1)
+		return true;
+	else
+		return false;
 }
 
 void take_yellow_ex()
 {
+	move_enc(TURN, stdPower, 'l', "stop");
 	move_enc(245, stdPower, 'f', "stop");
 	startTask(zahvatO);
 	hapuga('c');
@@ -195,6 +227,7 @@ void take_yellow_ex()
 
 	fwd_black(1, stdPower, "");
 	povleftSpec(stdPower);
+	location = 1;
 }
 
 void take_green_ex()
@@ -207,17 +240,18 @@ void take_green_ex()
 	move_enc(TURNAROUND, stdPower, 'l', "stop");
 	move_enc(200, stdPower, 'b', "stop");
 	zahvat('c');
-	move_enc(TURNAROUND+18, stdPower, 'l', "stop");
-	fwd_white(3, stdPower, "");
+	move_enc(120, zonePower, 'f', "stop");
 	fwd_black(3, stdPower, "");
-	povright(stdPower, "cross");
-	LineCross(stdPower, "stop");
 	povleftSpec(stdPower);
+	location = 3;
 }
 
 void take_blue_ex()
 {
+	Line1S3Cross(lineMaxPower, "stop");
+
 	startTask(zahvatO);
+
 	mot1_enc(200, 'b', stdPower, 'b', "");
 	while(SensorValue[S1]>BLACK)
 	{
@@ -228,63 +262,22 @@ void take_blue_ex()
 		motor[motorB]=-stdPower;
 	}
 	mot1_enc(82, 'b', stdPower, 'b', "stop");
-	move_enc(200, stdPower, 'b', "stop");
+
+	move_enc(280, stdPower, 'b', "stop");
+	wait1Msec(50);
+	startTask(hapugaO);
 	zahvat('c');
+	move_enc(70, stdPower, 'f', "stop");
 	move_enc(TURNAROUND, stdPower, 'l', "stop");
-	move_enc(265, stdPower, 'f', "stop");
-	wait1Msec(30);
+	move_enc(200, stdPower, 'f', "stop");
 	hapuga('c');
-	move_enc(TURN, zonePower, 'l', "stop");
-	move_enc(200, zonePower, 'f', "");
-	fwd_white(1, zonePower, "");
-	fwd_black(1, stdPower, "");
-	povleft(stdPower, "cross");
-	Line_enc(75, stdPower, "");
-	Line_enc(200, lineMaxPower, "");
-	LineCross(stdPower, "stop");
-}
 
-void check_and_take_ex()
-{
-	exColor = 0;
-	LineCross(stdPower, "stop");
-	nMotorEncoder[motorB] = 0;
-	while(nMotorEncoder[motorB] < 300)
-	{
-		Line(stdPower);
-		startTask(checkY);
-	}
+	while(SensorValue[S1] > BLACK)
+		moving(stdPower, 'b');
 	stopmotor();
 
-	if(exColor == 2)
-	{
-		move_enc(TURN, stdPower, 'l', "stop");
-		take_yellow_ex();
-		return;
-	}
-
-	mot1_enc(160, 'c', stdPower, 'f', "stop");
-	mot1_enc(150, 'b', stdPower, 'f', "stop");
-	Line_enc(80, stdPower, "");
-	LineCross(zonePower, "");
-	nMotorEncoder[motorB] = 0;
-	while(nMotorEncoder[motorB] < 300)
-	{
-		Line(stdPower);
-		startTask(checkG);
-	}
-	stopmotor();
-
-	if(exColor == 1)
-	{
-		move_enc(TURN, stdPower, 'l', "stop");
-		take_green_ex();
-		return;
-	}
-
-	stopmotor();
-	LineCross(lineMaxPower, "stop");
-	take_blue_ex();
+	mot1_enc(ONEMOTORTURN, 'c', stdPower, 'f', "stop");
+	location = 5;
 }
 
 void approachToBlue()
@@ -294,41 +287,26 @@ void approachToBlue()
 	move_enc(TURN, stdPower, 'l', "stop");
 }
 
-/*void takeBlueZone()
+void takeBlueZone()
 {
 	nMotorEncoder[motorB]=0;
-	while(nMotorEncoder[motorB]<350)
-	{
-		Line2(stdPower);
-	}
-	while(SensorValue[S3]<WHITE)
-	{
-		Line2(stdPower);
-	}
-	while(SensorValue[S3]>BLACK)
-	{
-		Line2(stdPower);
-	}
-	nMotorEncoder[motorB]=0;
-	while(nMotorEncoder[motorB]<200)
-	{
-		Line2(stdPower);
-	}
-	startTask(hapugaD);
-	move_enc(175, stdPower, 'f', "stop");
-	mot1_enc(ONEMOTORTURN, 'b', stdPower, 'b', "stop");
-
-	move_enc(140, stdPower, 'f', "stop");
+	Line1S1_enc(150, stdPower, "");
+	Line1S1White(stdPower, "stop");
+	move_enc(TURN, stdPower, 'r', "stop");
 	bricksInRobot[1] = 0;
-	hapuga('u');
-	move_enc(110,stdPower,'b',"stop");
+	startTask(hapugaM);
 
-	move_enc(250,stdPower,'r',"stop");
+	move_enc(100,stdPower,'b',"stop");
+	move_enc(130, stdPower, 'f', "stop");
+	hapuga('c');
+	move_enc(100,stdPower,'b',"stop");
+
+	move_enc(250,stdPower,'l',"stop");
 	fwd_white(3,stdPower,"");
 	fwd_black(3, stdPower, "");
 
 	move_enc(230, stdPower, 'f', "stop");
-	move_enc(TURN+3, stdPower, 'r', "stop");
+	move_enc(TURN+3, stdPower, 'l', "stop");
 
 	startTask(zahvatM);
 	move_enc(50, stdPower, 'f', "stop");
@@ -344,21 +322,32 @@ void approachToBlue()
 	fwd_black(2, stdPower, "stop");
 
 	location = 7;
-}*/
+}
 
 void take_ex_and_blue()
 {
 	checkDom1();
-	//writeDebugStreamLine("Time after dom1: %d", time1[T1] / 1000);
-	check_and_take_ex();
+	writeDebugStreamLine("Time after dom1: %d", time1[T1] / 1000);
+
+	if(check_yellow_ex())
+	{
+		take_yellow_ex();
+	}
+
+	else if(check_green_ex())
+	{
+		take_green_ex();
+	}
+
+	else
+	{
+		take_blue_ex();
+	}
 	writeDebugStreamLine("Time after excess: %d", time1[T1] / 1000);
-	//checkDom2();
-	writeDebugStreamLine("Time after put excess: %d", time1[T1] / 1000);
-	//checkDom3();
-	//approachToBlue();
+
 	approachToBlue();
-	//takeBlueZone
-	writeDebugStreamLine("Time after checking all field: %d", time1[T1] / 1000);
+	//takeBlueZone();
+	writeDebugStreamLine("Time after taking excess and blue: %d", time1[T1] / 1000);
 	writeDebugStreamLine("pauseCounter: %d", pauseCounter);
 }
 

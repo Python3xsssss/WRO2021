@@ -5,7 +5,7 @@
 #pragma config(Motor,  motorC,          leftMotor,     tmotorEV3_Medium, PIDControl, encoder)
 
 #include "WRO_Lib.h"
-#include "Check.h"
+#include "Collect.h"
 #include "Allocate.h"
 
 void init()
@@ -20,7 +20,6 @@ void init()
 
 void stapt()
 {
-	motor[motorD]=-25;
 	move_enc(240, stdPower, 'f', "");
 	Line1Cross(zonePower, "");
 	//povleft(stdPower, "cross");
@@ -62,9 +61,9 @@ void finish()
 void mainProgram()
 {
 	stapt();
-	checkAllField();
-	allocateAllBricks();
-	finish();
+	take_ex_and_blue();
+	//allocateAllBricks();
+	//finish();
 }
 
 task main()
