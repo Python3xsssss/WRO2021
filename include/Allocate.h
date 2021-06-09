@@ -7,7 +7,6 @@
 #define ENC2_DOM 185
 
 short rightWay[2][5] = {{1, 2, 3, 0, -1}, {1, 2, 3, 0, -1}};
-short ourWay[5] = {-1, -1, -1, -1, -1};
 short ourCrosses[5];
 short virtualBricks[4];
 short withoutZone = 0;
@@ -336,80 +335,6 @@ void calculation(short col)
 	//writeDebugStream("\n");
 }
 
-void move_to(short destination, const string ifTurn1, const string ifTurn2)
-{
-	if(location == 7)
-	{
-		povright(stdPower, "cross");
-	}
-	if(location == 8)
-	{
-		move_enc(200, zonePower, 'b', "stop");
-		if(ourWay[0] == 1)
-		{
-			move_enc(TURN, stdPower, 'r', "stop");
-		}
-		else
-		{
-			move_enc(TURNAROUND, stdPower, 'r', "stop");
-		}
-		move_enc(300 - 100*ourWay[0]%2, zonePower, 'f', "");
-		fwd_black(2, stdPower, "");
-		if(indDoms[0][0] == 2 && indDoms[0][1] == 2)
-			povrightSpec(stdPower);
-		else if(nInds[2] < 2 || indDoms[1][0] == 2 || indDoms[1][1] == 2)
-			povleftSpec(stdPower);
-		else
-			povleft(stdPower, "cross");
-
-		Line_enc(120, stdPower, "");
-
-		if(ourWay[0] != 1)
-		{
-			//if(ourWay[0] == 3)
-			//{
-			//	startTask(hapugaU);
-			//}
-			location = 3;
-		}
-	}
-	if(location < 7 && location != destination)
-	{
-		if(ifTurn1 == "turn")
-		{
-			turning(destination);
-		}
-		if(location == 4 && (bricksInRobot[0] == 2 || bricksInRobot[1] == 2))
-		{
-			startTask(hapugaD);
-		}
-		crosses(destination, "");
-		if(ifTurn2  == "turn")
-		{
-			if(old_location != destination)
-			{
-				move_enc(CROSS_ENC, stdPower, 'f', "stop");
-			}
-			else
-			{
-				stopmotor();
-			}
-			if((old_location < destination && destination % 2 == 1) || (old_location > destination && destination % 2 == 0))
-			{
-				povright(stdPower, "");
-			}
-			else
-			{
-				povleft(stdPower, "");
-			}
-		}
-		else
-		{
-			stopmotor();
-		}
-	}
-}
-
 void allocation(short col)
 {
 	clearDebugStream();
@@ -517,91 +442,9 @@ void allocation(short col)
 	withoutZone = 0;
 }
 
-void takeYellowZone()
-{
-	startTask(hapugaU);
-	Line_enc(250, zonePower, "");
-	LineCross(stdPower, "");
-	povleft(stdPower, "cross");
-	Line_enc(595, stdPower, "stop");
-
-	move_enc(TURN,stdPower,'l',"stop");
-	startTask(zahvatO);
-	move_enc(160,stdPower,'f',"stop");
-
-	move_enc(240,stdPower,'b',"stop");
-	zahvat('c');
-	move_enc(15,stdPower,'f',"");
-	povleft(stdPower, "cross");
-
-	Line_enc(50, stdPower, "");
-	LineCross(zonePower, "");
-	Line_enc(400, zonePower, "");
-	Line_enc(195+CROSS_ENC, stdPower, "stop");
-
-	move_enc(TURN,stdPower,'l',"stop");
-	move_enc(175,stdPower,'f',"stop");
-	hapuga('d');
-
-	bricksInRobot[0] = 2; bricksInRobot[2] = 2;
-	location = 8;
-}
-
-void takeBlueZone()
-{
-	nMotorEncoder[motorB]=0;
-	while(nMotorEncoder[motorB]<350)
-	{
-		Line2(stdPower);
-	}
-	while(SensorValue[S3]<WHITE)
-	{
-		Line2(stdPower);
-	}
-	while(SensorValue[S3]>BLACK)
-	{
-		Line2(stdPower);
-	}
-	nMotorEncoder[motorB]=0;
-	while(nMotorEncoder[motorB]<200)
-	{
-		Line2(stdPower);
-	}
-	startTask(hapugaD);
-	move_enc(175, stdPower, 'f', "stop");
-	mot1_enc(ONEMOTORTURN, 'b', stdPower, 'b', "stop");
-
-	move_enc(140, stdPower, 'f', "stop");
-	bricksInRobot[1] = 0;
-	hapuga('u');
-	move_enc(110,stdPower,'b',"stop");
-
-	move_enc(250,stdPower,'r',"stop");
-	fwd_white(3,stdPower,"");
-	fwd_black(3, stdPower, "");
-
-	move_enc(230, stdPower, 'f', "stop");
-	move_enc(TURN+3, stdPower, 'r', "stop");
-
-	startTask(zahvatM);
-	move_enc(50, stdPower, 'f', "stop");
-	//zahvat('m');
-	move_enc(105, stdPower, 'b', "stop");
-
-	bricksInRobot[3] = 0;
-	startTask(zahvatC);
-	wait1Msec(1000);
-
-	startTask(hapugaD);
-	move_enc(500, zonePower, 'f', "");
-	fwd_black(2, stdPower, "stop");
-
-	location = 7;
-}
-
 void allocateAllBricks()
 {
-	takeBlueZone();
+	//takeBlueZone();
 	writeDebugStreamLine("Time after blue zone: %d sec", time1[T1] / 1000);
 	allocation(0);
 	writeDebugStreamLine("Time after first allocation: %d sec", time1[T1] / 1000);
@@ -612,70 +455,5 @@ void allocateAllBricks()
 	//writeDebugStreamLine("Time after second allocation: %d", time1[T1] / 1000);
 }
 
-
-/*
-void takeGreenZone()
-{
-if(location != 4)
-{
-startTask(hapugaU);
-}
-startTask(zahvatCor);
-if(location < 3)
-{
-while(SensorValue[S1]<50)
-{
-Line(stdPower);
-}
-LineCross(stdPower, "stop");
-move_enc(70, stdPower, 'b', "stop");
-move_enc(TURN+10, stdPower, 'r', "stop");
-startTask(hapugaD);
-move_enc(70, stdPower, 'b', "stop");
-}
-if(location > 3)
-{
-if(location == 5)
-{
-LineCross(lineMaxPower, "");
-Line_enc(200, lineMaxPower, "");
-}
-lineWhite(lineMaxPower, "");
-LineCross(stdPower, "stop");
-move_enc(TURN, stdPower, 'l', "stop");
-startTask(hapugaD);
-move_enc(70, stdPower, 'b', "stop");
-}
-fwd_black(2, stdPower, "stop");
-nMotorEncoder[motorA]=0;
-while(nMotorEncoder[motorA]<HAPUGAG)
-{
-motor[motorA]=15;
-}
-motor[motorA]=0;
-move_enc(130, 18, 'f', "stop");
-hapuga('u');
-while(SensorValue[S2]>BLACK)
-{
-moving(stdPower, 'b');
-}
-stopmotor();
-povleft(stdPower, "cross");
-LineCross(stdPower, "");
-Line_enc(240, stdPower, "stop");
-move_enc(TURN, stdPower, 'l',"stop");
-move_enc(200, stdPower, 'f',"stop");
-zahvat('m');
-wait10Msec(10);
-zahvat('g');
-wait10Msec(15);
-move_enc(180, 18, 'b', "stop");
-zahvat('c');
-povleft(stdPower, "");
-lineWhite(stdPower, "");
-LineCross(stdPower, "");
-povright(stdPower, "cross");
-bricksInRobot[1] = 1; bricksInRobot[3] = 1;
-} */
 
 #endif
