@@ -38,7 +38,7 @@ task checkG()
 		readSensor(&colorSensor);
 		while(colorSensor.green < 3)
 		{
-				j = 0;
+			j = 0;
 
 			readSensor(&colorSensor);
 		}
@@ -173,7 +173,7 @@ void checkDom1()
 	check_ind(0, ENC1_DOM1, ENC2_DOM1);
 	move_enc(TURN, stdPower, 'r', "stop");
 	fwd_black(3, zonePower, "");
-	fwd_white(3, stdPower, "");
+	fwd_white(3, stdPower, "stop");
 	move_enc(TURN, stdPower, 'r', "stop");
 }
 
@@ -183,11 +183,12 @@ bool check_yellow_ex()
 	Line1S3Cross(stdPower, "stop");
 	startTask(checkY);
 	nMotorEncoder[motorB] = 0;
-	while(nMotorEncoder[motorB] < 300)
+	while(nMotorEncoder[motorB] < 320)
 	{
 		Line1S3(stdPower);
 	}
 	stopmotor();
+
 	if(exColor == 2)
 		return true;
 	else
@@ -200,11 +201,12 @@ bool check_green_ex()
 	Line1S3Cross(zonePower, "");
 	startTask(checkG);
 	nMotorEncoder[motorB] = 0;
-	while(nMotorEncoder[motorB] < 300)
+	while(nMotorEncoder[motorB] < 500)
 	{
 		Line1S3(stdPower);
 	}
 	stopmotor();
+
 	if(exColor == 1)
 		return true;
 	else
