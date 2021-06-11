@@ -20,8 +20,9 @@ void init()
 
 void stapt()
 {
-	move_enc(240, stdPower, 'f', "");
-	Line1Cross(zonePower, "");
+	move_enc(50, stdPower, 'f', "");
+	move_enc(150, zonePower, 'f', "");
+	Line1Cross(lineMaxPower, "");
 	//povleft(stdPower, "cross");
 }
 
@@ -73,6 +74,7 @@ task main()
 	clearDebugStream();
 	init();
 	mainProgram();
+	wait10Msec(100);
 	writeDebugStreamLine("Time: %d seconds", time1[T1] / 1000);
 
 }

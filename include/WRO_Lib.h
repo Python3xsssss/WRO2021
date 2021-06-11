@@ -21,7 +21,7 @@
 
 short pauseCounter = 0;
 short stdPower, lineMaxPower, zonePower;
-short location, old_location;
+short location, old_location; // location: 0-6 - T-crosses, 7 - accumulator, 8 - from blue zone, 9 - from yellow zone
 short sensors = 0;
 short indDoms[3][2] = {{-1,-1}, {-1,-1}, {-1,-1}}; // indDoms[0][0] - color index of first indicator in first dom, etc.
 short nInds[3] = {0, 0, 0}; // nInds[0] - num of blue indicators, etc.
@@ -925,54 +925,6 @@ void perebros(short speed)
 	bricksInRobot[0] = -2; bricksInRobot[2] = -1;
 }
 
-void akkumGB()
-{
-	if(ifCrossAkkum == "cross")
-	{
-		move_enc(CROSS_ENC, stdPower, 'f', "");
-	}
-	move_enc(28, stdPower, 'f', "stop");
-	wait1Msec(250);
-	motor[motorA]=-35;
-	wait1Msec(500);
-	motor[motorA]=0;
-	while(SensorValue[S2] > BLACK)
-	{
-		moving(stdPower, 'b');
-	}
-	move_enc(40, stdPower, 'b', "stop");
-	hap = 1;
-	hapuga('u');
-	move_enc(66, stdPower, 'f', "stop");
-	bricksInRobot[1] = -2;
-	for(short i = 0; i < 4; i++)
-		finalRazvoz[3][i] = 0;
-	writeDebugStreamLine("Time after akkum: %d sec", time1[T1] / 1000);
-}
-
-void akkum_std()
-{
-	if(hap == 2 && bricksInRobot[0] != -2)
-	{
-		hapuga('d');
-		startTask(hapugaM);
-	}
-	stopmotor();
-	if(ifCrossAkkum == "cross")
-	{
-		move_enc(TURNAROUND, stdPower, 'l', "stop");
-		move_enc(CROSS_ENC, stdPower, 'b', "");
-	}
-	move_enc(110, stdPower, 'b', "stop");
-	zahvat('o');
-	startTask(zahvatC);
-	wait1Msec(750);
-	fwd_black(1, stdPower, "stop"); //"" !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
-	bricksInRobot[2] = -2;
-	for(short i = 0; i < 4; i++)
-		finalRazvoz[3][i] = 0;
-	writeDebugStreamLine("Time after akkum: %d sec", time1[T1] / 1000);
-}
 
 void crosses(short destination, const string ifStop)
 {
@@ -1056,124 +1008,58 @@ void povleftSpec(short speed)
 
 void turning(short destination)
 {
-	if(location < destination && location % 2 == 1)
+	if(location < destination)
 	{
-		if(destination % 2 == 1)
+		if (location % 2 == 1)
 		{
-			povright(stdPower, "cross");
+			if (destination % 2 == 1)
+			{
+				povright(stdPower, "cross");
+			}
+			else
+			{
+				povrightSpec(stdPower);
+			}
 		}
-		else
+		else if (location % 2 == 0)
 		{
-			povrightSpec(stdPower);
+			if (destination % 2 == 1)
+			{
+				povleft(stdPower, "cross");
+			}
+			else
+			{
+				povleftSpec(stdPower);
+			}
 		}
 	}
-	if(location > destination && location % 2 == 0)
+	else if (location > destination)
 	{
-		if(destination % 2 == 0)
+		if (location % 2 == 1)
 		{
-			povright(stdPower, "cross");
+			if (destination % 2 == 0)
+			{
+				povleft(stdPower, "cross");
+			}
+			else
+			{
+				povleftSpec(stdPower);
+			}
 		}
-		else
+		else if (location % 2 == 0)
 		{
-			povrightSpec(stdPower);
-		}
-	}
-	if(location < destination && location % 2 == 0)
-	{
-		if(destination % 2 == 1)
-		{
-			povleft(stdPower, "cross");
-		}
-		else
-		{
-			povleftSpec(stdPower);
-		}
-	}
-	if(location > destination && location % 2 == 1)
-	{
-		if(destination % 2 == 0)
-		{
-			povleft(stdPower, "cross");
-		}
-		else
-		{
-			povleftSpec(stdPower);
+			if (destination % 2 == 0)
+			{
+				povright(stdPower, "cross");
+			}
+			else
+			{
+				povrightSpec(stdPower);
+			}
 		}
 	}
 }
 
-void move_to(short destination, const string ifTurn1, const string ifTurn2)
-{
-	if(location == 7)
-	{
-		povright(stdPower, "cross");
-	}
-	if(location == 8)
-	{
-		move_enc(200, zonePower, 'b', "stop");
-		if(ourWay[0] == 1)
-		{
-			move_enc(TURN, stdPower, 'r', "stop");
-		}
-		else
-		{
-			move_enc(TURNAROUND, stdPower, 'r', "stop");
-		}
-		move_enc(300 - 100*ourWay[0]%2, zonePower, 'f', "");
-		fwd_black(2, stdPower, "");
-		if(indDoms[0][0] == 2 && indDoms[0][1] == 2)
-			povrightSpec(stdPower);
-		else if(nInds[2] < 2 || indDoms[1][0] == 2 || indDoms[1][1] == 2)
-			povleftSpec(stdPower);
-		else
-			povleft(stdPower, "cross");
 
-		Line_enc(120, stdPower, "");
-
-		if(ourWay[0] != 1)
-		{
-			//if(ourWay[0] == 3)
-			//{
-			//	startTask(hapugaU);
-			//}
-			location = 3;
-		}
-	}
-	if(location < 7 && location != destination)
-	{
-		if(ifTurn1 == "turn")
-		{
-			turning(destination);
-		}
-		if(location == 4 && (bricksInRobot[0] == 2 || bricksInRobot[1] == 2))
-		{
-			startTask(hapugaD);
-		}
-		crosses(destination, "");
-		if(ifTurn2  == "turn")
-		{
-			if(old_location != destination)
-			{
-				move_enc(CROSS_ENC, stdPower, 'f', "stop");
-			}
-			else
-			{
-				stopmotor();
-			}
-			if((old_location < destination && destination % 2 == 1) || (old_location > destination && destination % 2 == 0))
-			{
-				povright(stdPower, "");
-			}
-			else
-			{
-				povleft(stdPower, "");
-			}
-		}
-		else
-		{
-			stopmotor();
-		}
-	}
-}
 
 #endif
