@@ -5,17 +5,76 @@
 
 #define ENC1_DOM 115
 #define ENC2_DOM 185
+#define BEFORE_CROSS 50
 
+int encs[5]={340, 800, 250, 950, 850};
+
+short our_crosses[5] = {-1,-1,-1,-1,-1};
 short rightWay[2][5] = {{1, 2, 3, 0, -1}, {1, 2, 3, 0, -1}};
-short ourWay[5] = {-1, -1, -1, -1, -1};
 short ourCrosses[5];
-short finalRazvoz[4][4];
 short virtualBricks[4];
 short withoutZone = 0;
+short importantBricks = -2;
+short cur_zone;
+short akkum_gb = 0;
+
+bool zahvats_empty()
+{
+	for (int i=0;i<4;i++)
+	{
+		if (bricksinrobot[i]>-2)
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+void akkumGB()
+{
+	move_enc(50, stdPower,'f', "stop");
+	zahvat('m');
+	move_enc(100, stdPower,'f', "stop");
+	zahvat('c');
+	while(SensorValue[S1]<WHITE)
+		moving(stdPower, 'b');
+	while(SensorValue[S1]>BLACK)
+		moving(stdPower, 'b');
+  stopmotor();
+  akkum_gb = 1;
+  importantBricks = -2;
+}
+
+void akkum_std()
+{
+	while(SensorValue[S1]>BLACK)
+		moving(stdPower, 'b');
+  stopmotor();
+	zahvat('m');
+	bricksInRobot[3] = importantBricks;
+	zahvat('o');
+	zahvat('c');
+}
+
+void put_akkum ()
+{
+	importantBricks = bricksInRobot[3];
+	bricksInRobot[3] = -2;
+	if (importantBricks != -2 && nInds[importantBricks] != 2)
+		akkumGB();
+
+	if (bricksInRobot[2] == -1 || nInds[bricksInRobot[2]] != 2)
+		akkum_std();
+
+	if(!akkum_gb)
+		bricksInRobot[3] = importantBricks;
+
+	akkum_gb = 0;
+}
 
 void checkDom(short dom)
 {
-	move_enc(10, stdPower, 'b', "stop");
+	move_enc(5, stdPower, 'b', "stop");
 	while(SensorValue[S3]<WHITE)
 	{
 		motor[motorC]=stdPower;
@@ -28,12 +87,8 @@ void checkDom(short dom)
 	{
 		motor[motorC]=stdPower;
 	}
-	while(SensorValue[S3]>WHITE-3)
-	{
-		motor[motorC]=stdPower;
-	}
-	stopmotor();
-	check_ind(dom, ENC1_DOM, ENC2_DOM);
+	mot1_enc(116, 'c', stdPower, 'b', "stop");
+	/*	check_ind(dom, ENC1_DOM, ENC2_DOM);*/
 	if(dom != 0)
 	{
 		fwd_black(2, stdPower, "");
@@ -113,41 +168,6 @@ void calcDom(short dom)
 			finalRazvoz[dom][i2] = 1;
 			virtualBricks[i2] = -2;
 		}
-		//if(i1 == 4 || i2 == 4)
-		//{
-		//	for(short i3=0; i3 < 4; i3++)
-		//	{
-		//		if(bricksInRobot[i3] == indDoms[dom][0] || bricksInRobot[i3] == indDoms[dom][1])
-		//		{
-		//			writeDebugStreamLine("i3: %d", i3);
-		//			finalRazvoz[dom][i3] = 1;
-		//			writeDebugStreamLine("%d ", finalRazvoz[dom][i3]);
-		//			virtualBricks[i3]=-2;
-		//			break;
-		//		}
-		//	}
-		//}
-
-		//else
-		//{
-		//	for(short i3=0; i3 < 4; i3++)
-		//	{
-		//		if(virtualBricks[i3] == indDoms[dom][0])
-		//		{
-		//			finalRazvoz[dom][i3] = 1;
-		//			virtualBricks[i3]=-2;
-		//		}
-		//	}
-
-		//	for(short i3=0; i3 < 4; i3++)
-		//	{
-		//		if(virtualBricks[i3] == indDoms[dom][1])
-		//		{
-		//			finalRazvoz[dom][i3] = 1;
-		//			virtualBricks[i3]=-2;
-		//		}
-		//	}
-		//}
 	}
 }
 
@@ -158,8 +178,11 @@ void putInDom(short hapuga1, short hapuga2, short zahvat1, short zahvat2, short 
 	{
 		LineRed(stdPower, "stop");
 		checkDom(dom);
-		calcDom(dom);
-		hapuga1 = finalRazvoz[dom][0]; hapuga2 = finalRazvoz[dom][1]; zahvat1 = finalRazvoz[dom][2]; zahvat2 = finalRazvoz[dom][3];
+		if(hapuga1 == 0 && hapuga2 == 0 && zahvat1 == 0 && zahvat2 == 0)
+		{
+			calcDom(dom);
+			hapuga1 = finalRazvoz[dom][0]; hapuga2 = finalRazvoz[dom][1]; zahvat1 = finalRazvoz[dom][2]; zahvat2 = finalRazvoz[dom][3];
+		}
 		if(hapuga1 == 0 && hapuga2 == 0)
 		{
 			povleft(stdPower, "cross");
@@ -168,8 +191,8 @@ void putInDom(short hapuga1, short hapuga2, short zahvat1, short zahvat2, short 
 		else
 		{
 			povright(stdPower, "cross");
-			startTask(hapugaU);
 		}
+		//otyezd nazad v ishodnuyu
 	}
 	else
 	{
@@ -183,52 +206,154 @@ void putInDom(short hapuga1, short hapuga2, short zahvat1, short zahvat2, short 
 		{
 			startTask(hapugaU);
 		}
-		line_enc(180,stdPower, "");
+		Line_enc(180,stdPower, "");
 	}
 
 	if (hapuga1)
 	{
 		nMotorEncoder[motorB]=0;
-		LineRed(stdPower,"stop");
-		move_enc(nMotorEncoder[motorB],stdPower,'b',"stop");
+		LineRed(stdPower,"");
+		int enc = nMotorEncoder[motorB];
+		move_enc(65, stdPower, 'f', "stop");
+		move_enc(enc + 65, stdPower, 'b', "stop");
+		bricksInRobot[0] = -2;
 	}
 	if (hapuga2)
 	{
 		startTask(hapugaD);
 		nMotorEncoder[motorB]=0;
-		LineRed(stdPower,"stop");
-		move_enc(nMotorEncoder[motorB],stdPower,'b',"stop");
+		Line_enc(160, stdPower, "stop");
+		wait1Msec(250);
+		move_enc(160, stdPower,'b',"stop");
+		bricksInRobot[1] = -2;
 	}
 	if (zahvat1)
 	{
-		if (!hapuga1 && !hapuga2)
+		if (!hapuga1 && !hapuga2 && !ifBack)
 			stopmotor();
 		if (!ifBack)
-			povleft(stdPower,"");
-		startTask(zahvatO);
-		move_enc(100,stdPower,'b',"stop");
-		move_enc(100,stdPower,'f',"stop");
+		{
+			if (dom == 0)
+				povright(stdPower,"");
+			else
+				povleft(stdPower,"");
+		}
+		//if(!hapuga2)
+		//{
+		//	startTask(zahvatO);
+		//	wait1Msec(1000);
+		//}
+		//else
+		//{
+		zahvat('o');
+		//}
+		move_enc(200,stdPower,'b',"stop");
+		move_enc(200,stdPower,'f',"");
+		bricksInRobot[2] = -2;
 	}
 	if (zahvat2)
 	{
-		if (!hapuga1 && !hapuga2 && !zahvat1)
+		if (!hapuga1 && !hapuga2 && !zahvat1 && !ifBack)
 			stopmotor();
 		if (!zahvat1 && !ifBack)
 		{
-			povleft(stdPower,"");
-			startTask(zahvatM);
+			if (dom == 0)
+				povright(stdPower,"");
+			else
+				povleft(stdPower,"");
 		}
-		else
-		{
-			startTask(zahvatC);
-		}
-		move_enc(100,stdPower,'b',"stop");
-		move_enc(100,stdPower,'f',"stop");
+		if (zahvat1)
+			stopmotor();
+		zahvat('m');
+		//if (zahvat1)
+		//	wait10Msec(250);
+		wait1Msec(300);
+		move_enc(70,stdPower,'b',"stop");
+		move_enc(70,stdPower,'f',"stop");
+		bricksInRobot[3] = -2;
 	}
-	if (!zahvat1 && !zahvat2)
-		povright(stdPower,"");
-	LineCross(stdPower,"");
+	if (!zahvat1 && !zahvat2 && !ifBack)
+	{
+		if (dom == 0)
+			povright(stdPower,"");
+		else
+			povleft(stdPower,"");
+	}
+
+	if(col == 0 || dom == 1)
+	{
+		startTask(hapugaU);
+	}
+	else
+		startTask(hapugaD);
+
+	if (dom == 1)
+	{
+		Line_enc(375, zonePower, "");
+	}
+
+	LineCross(stdPower, "stop");
+	for (int i = 0; i < 4; i++)
+		finalRazvoz[dom][i] = 0;
+	if (bricksInRobot[3] != -2 && zahvatPos != 0)
+		wait1Msec(150);
+	startTask(zahvatC);
+	if (bricksInRobot[3] != -2 && zahvatPos != 0)
+		wait1Msec(1800);
 }
+
+void crosses_new	(short destination, const string ifStop)
+{
+	for(short i = location; i == destination; i = (location < destination) ? i+1 : i-1)
+	{
+		location = i;
+		if(i == destination + 1 || i == destination - 1)
+			Line_enc(encs[(location > destination) ? i-1 : i] - BEFORE_CROSS, lineMaxPower, "");
+		else
+			Line_enc(encs[(location > destination) ? i-1 : i], lineMaxPower, "");
+	}
+	LineCross(stdPower, "");
+	if(ifStop == "stop" || ifStop == "STOP" || ifStop == "Stop" || ifStop == "s")
+		stopmotor();
+}
+void move_to_new(short destination, const string ifTurn1, const string ifTurn2)
+{
+	if(location == 8)
+	{
+		povleft(stdPower, "");
+	}
+	if(location < 8 && location != destination)
+	{
+		if(ifTurn1 == "turn" && location != 9)
+		{
+			turning(destination);
+			if (location == 7)
+			{
+				location = 4;
+			}
+
+			crosses_new(destination, "");
+
+			if(ifTurn2  == "turn")
+			{
+				if((old_location < destination && destination % 2 == 1) || (old_location > destination && destination % 2 == 0))
+				{
+					povright(stdPower, "cross");
+				}
+				else
+				{
+					povleft(stdPower, "cross");
+				}
+			}
+			else
+			{
+				stopmotor();
+			}
+		}
+	}
+	location = destination;
+}
+
 
 
 void calculation(short col)
@@ -288,39 +413,6 @@ void calculation(short col)
 					finalRazvoz[rightWay[col][i]][i2] = 1;
 					virtualBricks[i2] = -2;
 				}
-				//if(i1 == 4 || i2 == 4)
-				//{
-				//	for(short i3=0; i3 < 4; i3++)
-				//	{
-				//		if(virtualBricks[i3] == indDoms[rightWay[col][i]][0] || virtualBricks[i3] == indDoms[rightWay[col][i]][1])
-				//		{
-				//			finalRazvoz[rightWay[col][i]][i3] = 1;
-				//			virtualBricks[i3] = -2;
-				//			break;
-				//		}
-				//	}
-				//}
-				//else
-				//{
-				//	for(short i3=0; i3 < 4; i3++)
-				//	{
-				//		if(virtualBricks[i3] == indDoms[rightWay[col][i]][0])
-				//		{
-				//			finalRazvoz[rightWay[col][i]][i3] = 1;
-				//			virtualBricks[i3] = -2;
-				//			break;
-				//		}
-				//	}
-				//	for(short i3=0; i3 < 4; i3++)
-				//	{
-				//		if(virtualBricks[i3] == indDoms[rightWay[col][i]][1])
-				//		{
-				//			finalRazvoz[rightWay[col][i]][i3] = 1;
-				//			virtualBricks[i3] = -2;
-				//			break;
-				//		}
-				//	}
-				//}
 			}
 		}
 		//if(nInds[col] == 1 && rightWay[col][i] == 3)
@@ -339,362 +431,52 @@ void calculation(short col)
 			}
 		}
 	}
-	writeDebugStreamLine("finalRazvoz: ");
-	for(short i = 0; i < 4; i++)
-	{
-		for(short j = 0; j < 4; j++)
-		{
-			writeDebugStream("%d ", finalRazvoz[i][j]);
-		}
-		writeDebugStream("\n");
-	}
-	writeDebugStreamLine("ourWay: ");
-	for(short i = 0; i < 3; i++)
-	{
-		writeDebugStream("%d ", ourWay[i]);
-	}
+	//writeDebugStreamLine("finalRazvoz: ");
+	//for(short i = 0; i < 4; i++)
+	//{
+	//	for(short j = 0; j < 4; j++)
+	//	{
+	//		writeDebugStream("%d ", finalRazvoz[i][j]);
+	//	}
+	//	writeDebugStream("\n");
+	//}
+	//writeDebugStreamLine("ourWay: ");
+	//for(short i = 0; i < 3; i++)
+	//{
+	//	writeDebugStream("%d ", ourWay[i]);
+	//}
+	//writeDebugStream("\n");
 }
 
-void move_to(short destination, const string ifTurn1, const string ifTurn2)
-{
-	if(location == 7)
-	{
-		povright(stdPower, "cross");
-	}
-	if(location == 8)
-	{
-		move_enc(100, zonePower, 'b', "stop");
-		if(ourWay[0] == 1)
-		{
-			move_enc(TURN, stdPower, 'r', "stop");
-		}
-		else
-		{
-			move_enc(TURNAROUND, stdPower, 'r', "stop");
-		}
-		move_enc(250 + 50*ourWay[0], zonePower, 'f', "stop");
-		//fwd_white(2, zonePower, "");
-		fwd_black(2, stdPower, "");
-		povleft(stdPower, "cross");
-		if(ourWay[0] != 1)
-		{
-			Line_enc(120, stdPower, "");
-			if(ourWay[0] == 3)
-			{
-				startTask(hapugaU);
-			}
-			location = 3;
-		}
-	}
-	if(location < 7 && location != destination)
-	{
-		if(ifTurn1 == "turn")
-		{
-			turning(destination);
-		}
-		if(location == 4)
-		{
-			startTask(hapugaDM);
-		}
-		crosses(destination, "");
-		if(ifTurn2  == "turn")
-		{
-			if(old_location != destination)
-			{
-				move_enc(CROSS_ENC, stdPower, 'f', "stop");
-			}
-			else
-			{
-				stopmotor();
-			}
-			if((old_location < destination && destination % 2 == 1) || (old_location > destination && destination % 2 == 0))
-			{
-				povright(stdPower, "");
-			}
-			else
-			{
-				povleft(stdPower, "");
-			}
-		}
-		else
-		{
-			stopmotor();
-		}
-	}
-}
 
 void allocation(short col)
 {
-	hapuga('m');
-	for(short i = 0; i<4; i++)
+	cur_zone = -1;
+	// move_to_new(4, "", "");
+	for(short i = 0; i < 4 && !zahvats_empty(); i++)
 	{
-		for(short j = 0; j<4; j++)
-		{
-			finalRazvoz[i][j] = 0;
-		}
-	}
-	if(col == 1)
-	{
-		calculation(col);
-	}
-
-	for(short i = 0; i < 4; i++)
-	{
-		writeDebugStreamLine("i = %d", i);
-		writeDebugStream("bricksInRobot: ");
-		for (int j = 0; j < 4; j++)
-			writeDebugStream("%d ", bricksInRobot[j]);
-		writeDebugStreamLine("");
-		if(col == 0)
-		{
-			if(bricksInRobot[0] > -2 || bricksInRobot[1] > -2 || bricksInRobot[2] > -2 || bricksInRobot[3] > -2)
-			{
-				if(rightWay[col][i] == 3 && nInds[col] == 2)
-				{
-					withoutZone++;
-				}
-				ourWay[i] = rightWay[col][i+withoutZone];
-				writeDebugStreamLine("Next zone: %d", ourWay[i]);
-			}
-		}
-		ourCrosses[i] = assignment(ourWay[i]);
-		if(col == 0 && i < 2)
-		{
-			bricksInRobot[1] = (i == 0) ? -2 : 0;
-		}
-
-		if(i != 0)
-		{
-			if(ourWay[i-1] == 3)
-			{
-				move_to(ourCrosses[i], "", "turn");
-			}
-		}
-		if(col == 1 && ourWay[i] != 1 && i == 0)
-		{
-			move_to(ourCrosses[i], "", "turn");
-		}
+		our_crosses[i] = assignment(rightWay[col][i]);
+		move_to_new(our_crosses[i], "turn", "turn");
+		cur_zone = rightWay [col] [i];
+		if(cur_zone == 3)
+			put_akkum();
 		else
-		{
-			if(ourWay[i] != 3 || ourWay[i] != -2)
-			{
-				move_to(ourCrosses[i], "turn", "turn");
-			}
-			else
-			{
-				move_to(ourCrosses[i], "turn", "");
-			}
-		}
-		if(ourWay[i] == -1 || ourWay[i] == -2)
-		{
-			break;
-		}
-		if(ourWay[i] != 3)
-		{
-			putInDom(finalRazvoz[ourWay[i]][0], finalRazvoz[ourWay[i]][1], finalRazvoz[ourWay[i]][2], finalRazvoz[ourWay[i]][3], ourWay[i], col);
-		}
-		else
-		{
-			if(i == 0)
-			{
-				povleft(stdPower, "cross");
-				Line_enc(250, stdPower, "stop");
-				move_enc(TURNAROUND, stdPower, 'r', "stop");
-				LineCross(stdPower, "");
-			}
-			else
-			{
-				if(ourWay[i-1] == 2)
-				{
-					startTask(hapugaU);
-					ifCrossAkkum = "";
-					Line_enc(CROSS_ENC, stdPower, "stop");
-					if(nInds[2] < 2)
-					{
-						move_enc(TURN, stdPower, 'r', "stop");
-					}
-					else
-					{
-						move_enc(TURN, stdPower, 'l', "stop");
-					}
-				}
-			}
-			if(nInds[2] < 2)
-			{
-				stopmotor();
-				akkum_std();
-				povleft(stdPower, "cross");
-			}
-			else
-			{
-				akkumGB();
-				povright(stdPower, "cross");
-			}
-		}
-		old_location = location;
-		location = ourCrosses[i];
+			putInDom(0, 0, 0, 0, cur_zone, 0)
 	}
-	if(col == 0)
-	{
-		if((ourWay[1] == 3 || ourWay[2] == 3) && location == 4 && nInds[2] == 1)
-		{
-			povleft(stdPower, "cross");
-		}
-		else
-		{
-			povright(stdPower, "cross");
-		}
-	}
-	withoutZone = 0;
-}
-
-void takeYellowZone()
-{
-	LineCross(stdPower, "");
-	povleft(stdPower, "cross");
-	Line_enc(595, stdPower, "stop");
-
-	move_enc(TURN,stdPower,'l',"stop");
-	move_enc(160,stdPower,'f',"stop");
-	zahvat('o');
-	move_enc(240,stdPower,'b',"stop");
-	zahvat('c');
-	move_enc(15,stdPower,'f',"");
-	povleft(stdPower, "cross");
-
-	LineCross(stdPower, "");
-	Line_enc(595+CROSS_ENC, stdPower, "stop");
-
-	move_enc(TURN,stdPower,'l',"stop");
-	move_enc(175,stdPower,'f',"stop");
-	hapuga('d');
-
-	bricksInRobot[0] = 2; bricksInRobot[2] = 2;
-	location = 8;
-}
-
-void takeBlueZone()
-{
-	nMotorEncoder[motorB]=0;
-	while(nMotorEncoder[motorB]<350)
-	{
-		Line2(stdPower);
-	}
-	while(SensorValue[S3]<WHITE)
-	{
-		Line2(stdPower);
-	}
-	while(SensorValue[S3]>BLACK)
-	{
-		Line2(stdPower);
-	}
-	nMotorEncoder[motorB]=0;
-	while(nMotorEncoder[motorB]<200)
-	{
-		Line2(stdPower);
-	}
-	startTask(hapugaD);
-	move_enc(165, stdPower, 'f', "stop");
-	mot1_enc(ONEMOTORTURN, 'b', stdPower, 'b', "stop");
-
-	move_enc(145, stdPower, 'f', "stop");
-	hapuga('u');
-	move_enc(125,stdPower,'b',"stop");
-
-	move_enc(250,stdPower,'r',"stop");
-	fwd_white(3,stdPower,"");
-	fwd_black(3, stdPower, "");
-	move_enc(240, stdPower, 'f', "stop");
-	move_enc(TURN, stdPower, 'r', "stop");
-
-	move_enc(50, stdPower, 'f', "stop");
-	zahvat('m');
-	move_enc(130, stdPower, 'b', "stop");
-	zahvat('c');
-
-	startTask(hapugaD);
-	move_enc(80, stdPower, 'f', "");
-	fwd_black(2, stdPower, "stop");
-
-	bricksInRobot[1] = 0; bricksInRobot[3] = 0;
-	location = 7;
-}
-
-void takeGreenZone()
-{
-	if(location != 4)
-	{
-		startTask(hapugaU);
-	}
-	startTask(zahvatCor);
-	if(location < 3)
-	{
-		while(SensorValue[S1]<50)
-		{
-			Line(stdPower);
-		}
-		LineCross(stdPower, "stop");
-		move_enc(70, stdPower, 'b', "stop");
-		move_enc(TURN+10, stdPower, 'r', "stop");
-		startTask(hapugaD);
-		move_enc(70, stdPower, 'b', "stop");
-	}
-	if(location > 3)
-	{
-		if(location == 5)
-		{
-			LineCross(lineMaxPower, "");
-			Line_enc(200, lineMaxPower, "");
-		}
-		lineWhite(lineMaxPower, "");
-		LineCross(stdPower, "stop");
-		move_enc(TURN, stdPower, 'l', "stop");
-		startTask(hapugaD);
-		move_enc(70, stdPower, 'b', "stop");
-	}
-	fwd_black(2, stdPower, "stop");
-	nMotorEncoder[motorA]=0;
-	while(nMotorEncoder[motorA]<HAPUGAG)
-	{
-		motor[motorA]=15;
-	}
-	motor[motorA]=0;
-	move_enc(130, 18, 'f', "stop");
-	hapuga('u');
-	while(SensorValue[S2]>BLACK)
-	{
-		moving(stdPower, 'b');
-	}
-	stopmotor();
-	povleft(stdPower, "cross");
-	LineCross(stdPower, "");
-	Line_enc(240, stdPower, "stop");
-	move_enc(TURN, stdPower, 'l',"stop");
-	move_enc(200, stdPower, 'f',"stop");
-	zahvat('m');
-	wait10Msec(10);
-	zahvat('g');
-	wait10Msec(15);
-	move_enc(180, 18, 'b', "stop");
-	zahvat('c');
-	povleft(stdPower, "");
-	lineWhite(stdPower, "");
-	LineCross(stdPower, "");
-	povright(stdPower, "cross");
-	bricksInRobot[1] = 1; bricksInRobot[3] = 1;
 }
 
 void allocateAllBricks()
 {
-	takeBlueZone();
-	writeDebugStreamLine("Time after taking blue zone: %d", time1[T1] / 1000);
+	//takeBlueZone();
+	writeDebugStreamLine("Time after blue zone: %d sec", time1[T1] / 1000);
 	allocation(0);
-	writeDebugStreamLine("Time after first allocation: %d", time1[T1] / 1000);
+	writeDebugStreamLine("Time after first allocation: %d sec", time1[T1] / 1000);
 	//takeGreenZone();
-	takeYellowZone();
-	writeDebugStreamLine("Time after taking green and yellow zones: %d", time1[T1] / 1000);
-	allocation(1);
-	writeDebugStreamLine("Time after allocateing all bricks: %d", time1[T1] / 1000);
+	//takeYellowZone();
+	//writeDebugStreamLine("Time after yellow zone: %d sec", time1[T1] / 1000);
+	//allocation(1);
+	//writeDebugStreamLine("Time after second allocation: %d", time1[T1] / 1000);
 }
+
 
 #endif
