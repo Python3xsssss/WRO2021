@@ -6,13 +6,14 @@
 #include "hitechnic-colour-v2.h"
 
 #define BLACK 15
-#define WHITE 67
+#define WHITE 55
 #define GREY 40
-#define TURN 253
-#define TURNAROUND 505
-#define ONEMOTORTURN 505
-#define CROSS_ENC 75
-#define SPEC_DIFF 60
+#define TURN 255
+#define TURNAROUND 515
+#define ONEMOTORTURN 510
+#define CROSS_ENC 88
+#define SPEC_CROSS_L 33
+#define SPEC_CROSS_R 155
 #define HAPUGAM 25
 #define ZAHVATG 30
 #define HAPUGAG 64
@@ -20,17 +21,22 @@
 
 short pauseCounter = 0;
 short stdPower, lineMaxPower, zonePower;
-short location, old_location;
+short location, old_location; // location: 0-6 - T-crosses, 7 - accumulator, 8 - from blue zone, 9 - from yellow zone
 short sensors = 0;
-short indDoms[3][2] = {{-1,1}, {-1,-1}, {-1,-1}}; // indDoms[0][0] - color index of first indicator in first dom, etc.
+short indDoms[3][2] = {{-1,-1}, {-1,-1}, {-1,-1}}; // indDoms[0][0] - color index of first indicator in first dom, etc.
 short nInds[3] = {0, 0, 0}; // nInds[0] - num of blue indicators, etc.
 short bricksInRobot[4] = {-2, -2, -2, -2}; // bricksInRobot[0] - color index of bricks in hapuga, [1] - on hapuga, [2] - in zahvat, [3] - on zahvat
+short finalRazvoz[4][4] = {{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}};
+short ourWay[5] = {-1, -1, -1, -1, -1};
 short exColor;
-short zahvatPos = 0, hap = 2;
+short zahvatPos = 2, hap = 2;
 string ifCrossAkkum = "cross";
 short nEncB = 0;
 short nEncC = 0;
+short ifRazgon = 0;
+short decrease = 0;
 float k1, k2;
+bool ifTormoz = false;
 tHTCS2 colorSensor;
 
 void Line(short speed)
@@ -87,7 +93,7 @@ void Line1(short speed)
 	motor[motorC]=(-speed + u)*1.03;
 }
 
-void Line2(short speed)
+void Line1S1(short speed)
 {
 	k1 = 0.2; k2 = 10;
 	static short eold, e, u;
@@ -98,19 +104,79 @@ void Line2(short speed)
 	motor[motorC]=(-speed + u);
 }
 
+void Line1S3(short speed)
+{
+	k1 = 0.2; k2 = 10;
+	static short eold, e, u;
+	e=SensorValue[S3]-GREY;
+	u=k1*e+k2*(e-eold);
+	eold=e;
+	motor[motorB]=(speed + u);
+	motor[motorC]=(-speed + u);
+}
+
 void stopmotor()
 {
 	motor[motorB]=0;
 	motor[motorC]=0;
-	wait10Msec(30);
+	wait10Msec(20);
 	pauseCounter++;
+}
+
+void Line1S1_enc(int nEnc, short speed, const string ifStop)
+{
+	nMotorEncoder[motorB]=0;
+
+	while(nMotorEncoder[motorB] < nEnc)
+		Line1S1(speed);
+
+	if(ifStop == "stop" || ifStop == "Stop" || ifStop == "STOP")
+			stopmotor();
+}
+
+void Line1S1Cross(short speed, const string ifStop)
+{
+	while(SensorValue[S3] > BLACK)
+		Line1S1(speed);
+
+	if(ifStop == "stop" || ifStop == "Stop" || ifStop == "STOP")
+		stopmotor();
+}
+
+void Line1S1White(short speed, const string ifStop)
+{
+	while(SensorValue[S3] > WHITE)
+		Line1S1(speed);
+
+	if(ifStop == "stop" || ifStop == "Stop" || ifStop == "STOP")
+		stopmotor();
+}
+
+void Line1S3_enc(int nEnc, short speed, const string ifStop)
+{
+	nMotorEncoder[motorB]=0;
+
+	while(nMotorEncoder[motorB] < nEnc)
+		Line1S3(speed);
+
+	if(ifStop == "stop" || ifStop == "Stop" || ifStop == "STOP")
+			stopmotor();
+}
+
+void Line1S3Cross(short speed, const string ifStop)
+{
+	while(SensorValue[S1] > BLACK)
+		Line1S3(speed);
+
+	if(ifStop == "stop" || ifStop == "Stop" || ifStop == "STOP")
+		stopmotor();
 }
 
 void moving(short speed, char dir)
 {
 	if(dir=='f')
 	{
-		motor[motorB]=(speed >= zonePower) ? speed* 0.95 : speed;
+		motor[motorB]=speed;
 		motor[motorC]=-speed;
 	}
 	if(dir=='b')
@@ -130,39 +196,35 @@ void moving(short speed, char dir)
 	}
 }
 
-void move_enc(short enc, short speed, char dir, const string ifStop)
+void move_enc_old(short enc, short speed, char dir, const string ifStop)
 {
 	nMotorEncoder[motorB]=0;
 	if(dir=='f')
 	{
 		while(nMotorEncoder[motorB]<enc)
 		{
-			motor[motorB]=speed;
-			motor[motorC]=-speed;
+			moving(speed, 'f');
 		}
 	}
 	if(dir=='b')
 	{
 		while(nMotorEncoder[motorB]>-enc)
 		{
-			motor[motorB]=-speed;
-			motor[motorC]=speed;
+			moving(speed, 'b');
 		}
 	}
 	if(dir=='l')
 	{
 		while(nMotorEncoder[motorB]<enc)
 		{
-			motor[motorB]=speed;
-			motor[motorC]=speed;
+			moving(speed, 'l');
 		}
 	}
 	if(dir=='r')
 	{
 		while(nMotorEncoder[motorB]>-enc)
 		{
-			motor[motorB]=-speed;
-			motor[motorC]=-speed;
+			moving(speed, 'r');
 		}
 	}
 	if (ifStop == "stop" || ifStop == "Stop" || ifStop == "STOP")
@@ -170,6 +232,175 @@ void move_enc(short enc, short speed, char dir, const string ifStop)
 		stopmotor();
 	}
 
+}
+
+void moving_sync(short speed, char dir)
+{
+	short dirB; short dirC;
+	static float kmot = 1, kold = 1;
+	static short nEncMotB = 0, nEncMotC = 0;
+	if(ifTormoz)
+	{
+		nEncMotB = 0;
+		nEncMotC = 0;
+		ifTormoz = false;
+	}
+
+	if(motor[motorB] == 0 && motor[motorC] == 0)
+	{
+		//writeDebugStreamLine("kmot = %.1f, kold = %.1f", kmot, kold);
+		nEncMotB = abs(nMotorEncoder[motorB]);
+		nEncMotC = abs(nMotorEncoder[motorC]);
+	}
+
+	//if(ifRazgon)
+	//kmot = 0.73;
+
+	else if(abs(nMotorEncoder[motorB]) % (50 - 40*ifRazgon) < 5 && abs(nMotorEncoder[motorB]) != 0 && abs(nMotorEncoder[motorC]) != 0)
+	{
+		//writeDebugStreamLine("nEncMotB: %.3f", (float)(abs(nMotorEncoder[motorB])));
+		//writeDebugStreamLine("nEncMotBOld: %.3f", (float)(nEncMotB));
+		//writeDebugStreamLine("nEncMotC: %.3f", (float)(abs(nMotorEncoder[motorC])));
+		//writeDebugStreamLine("nEncMotCOld: %.3f", (float)(nEncMotC));
+		kold = (float)kmot;
+		kmot = (float)(abs(nMotorEncoder[motorB]) - nEncMotB) / (float)(abs(nMotorEncoder[motorC]) - nEncMotC) * kold;
+		//writeDebugStreamLine("kmot = %.3f, kold = %.1f", kmot, kold);
+		//writeDebugStreamLine("chastnoe: %.3f", (float)(abs(nMotorEncoder[motorB]) - nEncMotB) / (float)(abs(nMotorEncoder[motorC]) - nEncMotC));
+		nEncMotB = abs(nMotorEncoder[motorB]);
+		nEncMotC = abs(nMotorEncoder[motorC]);
+	}
+
+	if(kmot > 1)
+		kmot = 1;
+
+	if(dir == 'f')
+	{
+		dirB = 1;
+		dirC = -1;
+	}
+	if(dir == 'b')
+	{
+		dirB = -1;
+		dirC = 1;
+	}
+	if(dir == 'r')
+	{
+		dirB = -1;
+		dirC = -1;
+	}
+	if(dir == 'l')
+	{
+		dirB = 1;
+		dirC = 1;
+	}
+
+	motor[motorB] = speed*dirB;
+	motor[motorC] = speed*dirC*kmot;
+
+	while((abs(nMotorEncoder[motorB]) == nEncMotB || abs(nMotorEncoder[motorC]) == nEncMotC) || abs(nMotorEncoder[motorB]) % (50 - 40*ifRazgon) < 5)
+	{
+		motor[motorB] = speed*dirB;
+		motor[motorC] = speed*dirC*kmot;
+	}
+
+	if(abs(nMotorEncoder[motorB]) > 120 && ifRazgon == 0.5)
+		ifRazgon = 0;
+}
+
+void razgon(short speed, char dir, int nEnc)
+{
+	ifRazgon = 1;
+	short i = 0;
+
+	while(abs(motor[motorC]) < speed && abs(motor[motorB]) < speed)
+	{
+		i++;
+
+		while(abs(nMotorEncoder[motorB]) < i + i%40*3)
+		{
+			if(abs(nMotorEncoder[motorB]) >= nEnc - decrease*30)
+				break;
+			moving_sync(i+9, dir);
+		}
+		if(abs(nMotorEncoder[motorB]) >= nEnc - decrease*30)
+			break;
+	}
+	ifRazgon = 0.5;
+}
+
+void tormoz(float speed, char dir)
+{
+	nMotorEncoder[motorB] = 0;
+	nMotorEncoder[motorC] = 0;
+	short dirB, dirC;
+	ifTormoz = true;
+
+	if(dir == 'f')
+	{
+		dirB = 1;
+		dirC = -1;
+	}
+	if(dir == 'b')
+	{
+		dirB = -1;
+		dirC = 1;
+	}
+	if(dir == 'r')
+	{
+		dirB = -1;
+		dirC = -1;
+	}
+	if(dir == 'l')
+	{
+		dirB = 1;
+		dirC = 1;
+	}
+	//motor[motorB] = speed*dirB;
+	//motor[motorC] = speed*dirC;
+	for(short i = 5; i > 0; i-=1)
+	{
+		short nEncMotorB = abs(nMotorEncoder[motorB]);
+		while(abs(nMotorEncoder[motorB]) < nEncMotorB + 6)
+		{
+			motor[motorB] = (4*i)*dirB;
+			motor[motorC] = (4*i)*dirC;
+			//moving_sync(speed*((float)(i))/((float)(5)), 'f');
+		}
+	}
+	motor[motorB] = 0;
+	motor[motorC] = 0;
+}
+
+void move_enc(int nEnc, short speed, char dir, const string ifStop)
+{
+	nMotorEncoder[motorB] = 0;
+	nMotorEncoder[motorC] = 0;
+
+	if((dir == 'f' || dir == 'b') && nEnc >= 30)
+	{
+		if((ifStop == "stop" || ifStop == "Stop" || ifStop == "STOP") /*&& dir != 'r' && dir != 'l'*/)
+			decrease = 1;
+
+		if(motor[motorB] == 0 && motor[motorC] == 0)
+			razgon(speed, dir, nEnc);
+
+		while(abs(nMotorEncoder[motorB]) <= nEnc  - 30*decrease)
+			moving_sync(speed, dir);
+
+		if(ifStop == "stop" || ifStop == "Stop" || ifStop == "STOP")
+			tormoz(speed, dir);
+	}
+
+	else
+	{
+		while(abs(nMotorEncoder[motorB]) < nEnc)
+			moving(speed, dir);
+
+		if(ifStop == "stop" || ifStop == "Stop" || ifStop == "STOP")
+			stopmotor();
+	}
+
+	decrease = 0;
 }
 
 void povright(short speed, const string ifCross)
@@ -267,7 +498,7 @@ void Line1Cross(short speed, const string ifStop)
 
 void lineWhite(short speed, const string ifStop)
 {
-	while(SensorValue[S1]<WHITE)
+	while(SensorValue[S1]<WHITE+3)
 	{
 		Line(speed);
 	}
@@ -375,17 +606,17 @@ void fwd_white(short SensorPort, short speed, const string ifStop)
 
 bool pass_color(short nEnc, short speed)
 {
-	while(colorSensor.color>0)
+	moving(speed, 'f');
+
+	readSensor(&colorSensor);
+	while(colorSensor.color > 0)
 	{
 		readSensor(&colorSensor);
-		moving(speed, 'f');
 	}
-
 	nMotorEncoder[motorB]=0;
 	while(colorSensor.color != 2 && colorSensor.color != 3 && colorSensor.color != 4 && colorSensor.color != 6)
 	{
 		readSensor(&colorSensor);
-		moving(speed, 'f');
 		if (SensorValue[S2] < BLACK && SensorValue[S3] < BLACK || nMotorEncoder[motorB] >= nEnc)
 		{
 			return false;
@@ -396,17 +627,17 @@ bool pass_color(short nEnc, short speed)
 
 bool back_pass_color(short nEnc, short speed)
 {
+	moving(speed, 'b');
+	readSensor(&colorSensor);
 	while(colorSensor.color > 0)
 	{
 		readSensor(&colorSensor);
-		moving(speed, 'b');
 	}
 
 	nMotorEncoder[motorB]=0;
 	while(colorSensor.color != 2 && colorSensor.color != 3 && colorSensor.color != 4 && colorSensor.color != 6)
 	{
 		readSensor(&colorSensor);
-		moving(speed, 'b');
 		if (nMotorEncoder[motorB] <= -nEnc)
 		{
 			return false;
@@ -489,49 +720,79 @@ void mot1_enc(short enc, char portMotor, short speed, char dir, const string ifS
 	}
 }
 
-//void lineToLine()
-//{
-//	if(sensors == 0)
-//	{
-//		mot1_enc(LINETOLINE, 'b', stdPower, 'f', "stop");
-//		mot1_enc(LINETOLINE, 'c', stdPower, 'f', "stop");
-//		sensors = 1;
-//	}
-//	else
-//	{
-//		mot1_enc(LINETOLINE, 'c', stdPower, 'f', "stop");
-//		mot1_enc(LINETOLINE, 'b', stdPower, 'f', "stop");
-//		sensors = 0;
-//	}
-//}
-
 void hapuga(char dir)
 {
-	if(dir=='u')
+	short speed;
+	if(bricksInRobot[1] > -2)
 	{
-		motor[motorA]=20;
-		wait10Msec(55);
+		speed = 14;
+	}
+	else
+	{
+		speed = 45;
+	}
+
+	if(dir=='u' && hap != 2)
+	{
+		motor[motorA]=speed;
+		wait10Msec(1000/speed);
 		hap = 2;
 	}
-	if(dir=='d')
+	if(dir=='d' && hap != 0)
 	{
-		motor[motorA]=-30;
-		wait10Msec(65);
+		motor[motorA]=-speed;
+		wait10Msec(2000/speed);
 		hap = 0;
 	}
-	if(dir ==  'm')
+	if(dir=='c')
 	{
-		motor[motorA]=15;
-		wait10Msec(20);
-		motor[motorA]=0;
-		wait10Msec(20);
-		nMotorEncoder[motorA]=0;
-		while(nMotorEncoder[motorA] < HAPUGAM)
+		if(hap != 0)
 		{
-			motor[motorA] = 20;
+			motor[motorA]=-speed;
+			wait10Msec((3000 + 500 * zahvatPos)/speed);
+		}
+		hap = 0;
+	}
+
+	if(dir=='o')
+	{
+		if(hap != 2)
+		{
+			motor[motorA]=speed;
+			wait10Msec(3500/speed);
+		}
+		hap = 2;
+	}
+
+	if(dir=='m')
+	{
+		nMotorEncoder[motorA]=0;
+		if(hap == 0)
+		{
+			while(nMotorEncoder[motorA] < 200)
+			{
+				motor[motorA]=speed;
+			}
+		}
+		if(hap == 2)
+		{
+			while(nMotorEncoder[motorA] > -250)
+			{
+				motor[motorA]=-speed;
+			}
 		}
 		hap = 1;
 	}
+
+	if(dir=='g')
+	{
+		while(nMotorEncoder[motorA] > -ZAHVATG)
+		{
+			motor[motorA]=-15;
+		}
+	}
+	motor[motorA]=0;
+
 	motor[motorA]=0;
 }
 
@@ -540,11 +801,11 @@ void zahvat(char dir)
 	short speed;
 	if(bricksInRobot[3] > -2)
 	{
-		speed = 18;
+		speed = 14;
 	}
 	else
 	{
-		speed = 30;
+		speed = 45;
 	}
 
 	nMotorEncoder[motorD]=0;
@@ -553,7 +814,7 @@ void zahvat(char dir)
 		if(zahvatPos != 0)
 		{
 			motor[motorD]=-speed;
-			wait10Msec(4200/speed);
+			wait10Msec((3000 + 500 * zahvatPos)/speed);
 		}
 		zahvatPos = 0;
 	}
@@ -615,6 +876,16 @@ task hapugaM()
 	hapuga('m');
 }
 
+task hapugaO()
+{
+	hapuga('o');
+}
+
+task hapugaC()
+{
+	hapuga('c');
+}
+
 task hapugaD()
 {
 	hapuga('d');
@@ -630,6 +901,11 @@ task zahvatO()
 	zahvat('o');
 }
 
+task zahvatM()
+{
+	zahvat('m');
+}
+
 task zahvatCor()
 {
 	motor[motorD]=-30;
@@ -642,53 +918,20 @@ void perebros(short speed)
 	hapuga('u');
 	startTask(zahvatO);
 	move_enc(200, speed, 'b', "stop");
-	move_enc(TURNAROUND+14, speed, 'l', "stop");
+	move_enc(TURNAROUND+25, speed, 'l', "stop");
 	move_enc(200, speed, 'b', "stop");
 	zahvat('c');
-	move_enc(TURNAROUND+30, stdPower, 'r', "stop");
+	move_enc(TURNAROUND+38, stdPower, 'r', "stop");
 	bricksInRobot[0] = -2; bricksInRobot[2] = -1;
 }
 
-void akkumGB()
-{
-	if(ifCrossAkkum == "cross")
-	{
-		move_enc(CROSS_ENC, stdPower, 'f', "stop");
-	}
-	motor[motorA]=-60;
-	wait10Msec(25);
-	motor[motorA]=0;
-	while(SensorValue[S2] > BLACK)
-	{
-		moving(stdPower, 'b');
-	}
-	stopmotor();
-	hapuga('u');
-	bricksInRobot[1] = -2;
-}
-
-void akkum_std()
-{
-	if(indDoms[2][0] != -1 || indDoms[2][1] != -1)
-	{
-		hapuga('d');
-		hapuga('m');
-	}
-	stopmotor();
-	if(ifCrossAkkum == "cross")
-	{
-		move_enc(TURNAROUND, stdPower, 'l', "stop");
-		move_enc(CROSS_ENC, stdPower, 'b', "");
-	}
-	move_enc(85, stdPower, 'b', "stop");
-	zahvat('o');
-	zahvat('c');
-	fwd_black(1, stdPower, "");
-	bricksInRobot[2] = -2;
-}
 
 void crosses(short destination, const string ifStop)
 {
+	if(location == destination)
+	{
+		return;
+	}
 	if(destination % 2 == 0 && destination < location || destination % 2 != 0 && destination > location)
 	{
 		for(short i = 0; i < abs(destination - location)/2 + abs(destination - location) % 2; i++)
@@ -723,7 +966,7 @@ void crosses(short destination, const string ifStop)
 
 void povrightSpec(short speed)
 {
-	move_enc(CROSS_ENC+SPEC_DIFF, speed, 'f', "stop");
+	move_enc(SPEC_CROSS_R, speed, 'f', "stop");
 	if((hap == 1 && bricksInRobot[1] == 1) || (hap == 2 && bricksInRobot[0] == 1))
 	{
 		stdPower = 18;
@@ -744,7 +987,7 @@ void povrightSpec(short speed)
 
 void povleftSpec(short speed)
 {
-	move_enc(CROSS_ENC-SPEC_DIFF, speed, 'f', "stop");
+	move_enc(SPEC_CROSS_L, speed, 'f', "stop");
 	if((hap == 1 && bricksInRobot[1] == 1) || (hap == 2 && bricksInRobot[0] == 1))
 	{
 		stdPower = 18;
@@ -765,51 +1008,58 @@ void povleftSpec(short speed)
 
 void turning(short destination)
 {
-	if(location < destination && location % 2 == 1)
+	if(location < destination)
 	{
-		if(destination % 2 == 1)
+		if (location % 2 == 1)
 		{
-			povright(stdPower, "cross");
+			if (destination % 2 == 1)
+			{
+				povright(stdPower, "cross");
+			}
+			else
+			{
+				povrightSpec(stdPower);
+			}
 		}
-		else
+		else if (location % 2 == 0)
 		{
-			povrightSpec(stdPower);
+			if (destination % 2 == 1)
+			{
+				povleft(stdPower, "cross");
+			}
+			else
+			{
+				povleftSpec(stdPower);
+			}
 		}
 	}
-	if(location > destination && location % 2 == 0)
+	else if (location > destination)
 	{
-		if(destination % 2 == 0)
+		if (location % 2 == 1)
 		{
-			povright(stdPower, "cross");
+			if (destination % 2 == 0)
+			{
+				povleft(stdPower, "cross");
+			}
+			else
+			{
+				povleftSpec(stdPower);
+			}
 		}
-		else
+		else if (location % 2 == 0)
 		{
-			povrightSpec(stdPower);
+			if (destination % 2 == 0)
+			{
+				povright(stdPower, "cross");
+			}
+			else
+			{
+				povrightSpec(stdPower);
+			}
 		}
 	}
-	if(location < destination && location % 2 == 0)
-	{
-		if(destination % 2 == 1)
-		{
-			povleft(stdPower, "cross");
-		}
-		else
-		{
-			povleftSpec(stdPower);
-		}
-	}
-	if(location > destination && location % 2 == 1)
-	{
-		if(destination % 2 == 0)
-		{
-			povleft(stdPower, "cross");
-		}
-		else
-		{
-			povleftSpec(stdPower);
-		}
-	}
-	stdPower = 25;
 }
+
+
 
 #endif

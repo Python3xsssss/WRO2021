@@ -91,7 +91,7 @@ task main()
 		while (getButtonPress(ENTER_BUTTON) == 0);
 		fileWriteShort(fileHandle, val);
 		wait1Msec(1000);
-	  fileClose(fileHandle);
+        fileClose(fileHandle);
 	}
 
 	output();

@@ -5,9 +5,9 @@
 
 #define ENC1_DOM 115
 #define ENC2_DOM 185
-#define BEFORE_CROSS 50
+#define BEFORE_CROSS 75
 
-int encs[5]={340, 800, 250, 950, 850};
+int encs[6]={340, 800, 250, 950, 850, 250};
 
 short our_crosses[5] = {-1,-1,-1,-1,-1};
 short rightWay[2][5] = {{1, 2, 3, 0, -1}, {1, 2, 3, 0, -1}};
@@ -20,9 +20,9 @@ short akkum_gb = 0;
 
 bool zahvats_empty()
 {
-	for (int i=0;i<4;i++)
+	for (int i = 0; i < 4; i++)
 	{
-		if (bricksinrobot[i]>-2)
+		if (bricksInRobot[i] > -2)
 		{
 			return false;
 		}
@@ -97,17 +97,7 @@ void checkDom(short dom)
 
 int assignment(int zone)
 {
-	if(zone == -2)
-	{
-		return 0;
-	}
-
-	else if(zone == -1)
-	{
-		return 2;
-	}
-
-	else if(zone == 0)
+	if(zone == 0)
 	{
 		return 1;
 	}
@@ -171,17 +161,18 @@ void calcDom(short dom)
 	}
 }
 
-void putInDom(short hapuga1, short hapuga2, short zahvat1, short zahvat2, short dom, short col)
+void putInDom(short hapuga1, short hapuga2, short zahvat1, short zahvat2, short dom, short partAlloc)
 {
 	bool ifBack = false;
-	if(indDoms[dom][0] == -1 && indDoms[dom][1] == -1)
+	if(indDoms[dom][0] == -1 && indDoms[dom][1] == -1) // body of this IF - to the function
 	{
 		LineRed(stdPower, "stop");
 		checkDom(dom);
 		if(hapuga1 == 0 && hapuga2 == 0 && zahvat1 == 0 && zahvat2 == 0)
 		{
 			calcDom(dom);
-			hapuga1 = finalRazvoz[dom][0]; hapuga2 = finalRazvoz[dom][1]; zahvat1 = finalRazvoz[dom][2]; zahvat2 = finalRazvoz[dom][3];
+			hapuga1 = finalRazvoz[dom][0]; hapuga2 = finalRazvoz[dom][1];
+			zahvat1 = finalRazvoz[dom][2]; zahvat2 = finalRazvoz[dom][3];
 		}
 		if(hapuga1 == 0 && hapuga2 == 0)
 		{
@@ -196,7 +187,7 @@ void putInDom(short hapuga1, short hapuga2, short zahvat1, short zahvat2, short 
 	}
 	else
 	{
-		if(col == 0)
+		if(partAlloc == 0)
 		{
 			calcDom(dom);
 			hapuga1 = finalRazvoz[dom][0]; hapuga2 = finalRazvoz[dom][1];
@@ -204,15 +195,15 @@ void putInDom(short hapuga1, short hapuga2, short zahvat1, short zahvat2, short 
 		}
 		if (hapuga1)
 		{
-			startTask(hapugaU);
+			startTask(hapugaO);
 		}
-		Line_enc(180,stdPower, "");
+		Line_enc(180, stdPower, "");
 	}
 
 	if (hapuga1)
 	{
 		nMotorEncoder[motorB]=0;
-		LineRed(stdPower,"");
+		LineRed(stdPower, "");
 		int enc = nMotorEncoder[motorB];
 		move_enc(65, stdPower, 'f', "stop");
 		move_enc(enc + 65, stdPower, 'b', "stop");
@@ -220,7 +211,7 @@ void putInDom(short hapuga1, short hapuga2, short zahvat1, short zahvat2, short 
 	}
 	if (hapuga2)
 	{
-		startTask(hapugaD);
+		startTask(hapugaM);
 		nMotorEncoder[motorB]=0;
 		Line_enc(160, stdPower, "stop");
 		wait1Msec(250);
@@ -233,7 +224,7 @@ void putInDom(short hapuga1, short hapuga2, short zahvat1, short zahvat2, short 
 			stopmotor();
 		if (!ifBack)
 		{
-			if (dom == 0)
+			if (dom == 0) // mb uzhe ne nado
 				povright(stdPower,"");
 			else
 				povleft(stdPower,"");
@@ -257,7 +248,7 @@ void putInDom(short hapuga1, short hapuga2, short zahvat1, short zahvat2, short 
 			stopmotor();
 		if (!zahvat1 && !ifBack)
 		{
-			if (dom == 0)
+			if (dom == 0) // mb uzhe ne nado
 				povright(stdPower,"");
 			else
 				povleft(stdPower,"");
@@ -274,18 +265,13 @@ void putInDom(short hapuga1, short hapuga2, short zahvat1, short zahvat2, short 
 	}
 	if (!zahvat1 && !zahvat2 && !ifBack)
 	{
-		if (dom == 0)
+		if (dom == 0) // mb uzhe ne nado
 			povright(stdPower,"");
 		else
 			povleft(stdPower,"");
 	}
 
-	if(col == 0 || dom == 1)
-	{
-		startTask(hapugaU);
-	}
-	else
-		startTask(hapugaD);
+	startTask(hapugaC);
 
 	if (dom == 1)
 	{
@@ -302,36 +288,41 @@ void putInDom(short hapuga1, short hapuga2, short zahvat1, short zahvat2, short 
 		wait1Msec(1800);
 }
 
-void crosses_new	(short destination, const string ifStop)
+void crosses_new(short destination, const string ifStop)
 {
-	for(short i = location; i == destination; i = (location < destination) ? i+1 : i-1)
+	for(short i = location; i != destination; i = (location < destination) ? i+1 : i-1)
 	{
 		location = i;
-		if(i == destination + 1 || i == destination - 1)
-			Line_enc(encs[(location > destination) ? i-1 : i] - BEFORE_CROSS, lineMaxPower, "");
+		int shift = (abs(i - destination) == 1) ? BEFORE_CROSS : 0;
+		int curr_enc = encs[(location > destination) ? i-1 : i] - shift;
+		if(!sensors)
+			Line_enc(curr_enc, lineMaxPower, "");
 		else
-			Line_enc(encs[(location > destination) ? i-1 : i], lineMaxPower, "");
+			Line1_enc(curr_enc, lineMaxPower, "");
 	}
 	LineCross(stdPower, "");
+
 	if(ifStop == "stop" || ifStop == "STOP" || ifStop == "Stop" || ifStop == "s")
 		stopmotor();
 }
+
 void move_to_new(short destination, const string ifTurn1, const string ifTurn2)
 {
 	if(location == 8)
 	{
-		povleft(stdPower, "");
+		return;
 	}
 	if(location < 8 && location != destination)
 	{
-		if(ifTurn1 == "turn" && location != 9)
+		if(ifTurn1 == "turn")// && location != 9)
 		{
 			turning(destination);
-			if (location == 7)
+			if (location == 7) // accumulator
 			{
 				location = 4;
 			}
 
+      old_location = location;
 			crosses_new(destination, "");
 
 			if(ifTurn2  == "turn")
@@ -351,7 +342,6 @@ void move_to_new(short destination, const string ifTurn1, const string ifTurn2)
 			}
 		}
 	}
-	location = destination;
 }
 
 
@@ -387,7 +377,7 @@ void calculation(short col)
 			{
 				ourWay[counter] = rightWay[col][i];
 				counter++;
-				for(i1=0; i1<4; i1++)
+				for(i1 = 0; i1 < 4; i1++)
 				{
 					if(indDoms[rightWay[col][i]][0] == virtualBricks[i1])
 					{
@@ -395,7 +385,7 @@ void calculation(short col)
 						break;
 					}
 				}
-				for(i2=0; i2<4; i2++)
+				for(i2 = 0; i2 < 4; i2++)
 				{
 					if(indDoms[rightWay[col][i]][1] == virtualBricks[i2])
 					{
@@ -415,53 +405,33 @@ void calculation(short col)
 				}
 			}
 		}
-		//if(nInds[col] == 1 && rightWay[col][i] == 3)
-		//{
-		//	finalRazvoz[rightWay[col][i]][3] = 1;
-		//	ourWay[counter] = rightWay[col][i];
-		//	counter++;
-		//}
 		if(col==1)
 		{
 			if(nInds[col+1] == 1 && rightWay[col][i] == 3)
 			{
 				finalRazvoz[rightWay[col][i]][2] = 1;
-				ourWay[counter] =  rightWay[col][i];
+				ourWay[counter] = rightWay[col][i];
 				counter++;
 			}
 		}
 	}
-	//writeDebugStreamLine("finalRazvoz: ");
-	//for(short i = 0; i < 4; i++)
-	//{
-	//	for(short j = 0; j < 4; j++)
-	//	{
-	//		writeDebugStream("%d ", finalRazvoz[i][j]);
-	//	}
-	//	writeDebugStream("\n");
-	//}
-	//writeDebugStreamLine("ourWay: ");
-	//for(short i = 0; i < 3; i++)
-	//{
-	//	writeDebugStream("%d ", ourWay[i]);
-	//}
-	//writeDebugStream("\n");
 }
 
 
-void allocation(short col)
+void allocation(short part)
 {
 	cur_zone = -1;
-	// move_to_new(4, "", "");
 	for(short i = 0; i < 4 && !zahvats_empty(); i++)
 	{
-		our_crosses[i] = assignment(rightWay[col][i]);
+		our_crosses[i] = assignment(rightWay[part][i]);
 		move_to_new(our_crosses[i], "turn", "turn");
-		cur_zone = rightWay [col] [i];
+		cur_zone = rightWay[part][i];
 		if(cur_zone == 3)
 			put_akkum();
 		else
-			putInDom(0, 0, 0, 0, cur_zone, 0)
+			putInDom(0, 0, 0, 0, cur_zone, part);
+		if(i == 0 && location == 8)
+			location = 4;
 	}
 }
 
