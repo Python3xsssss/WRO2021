@@ -4,19 +4,10 @@
 #pragma config(Motor,  motorB,          rightMotor,    tmotorEV3_Medium, PIDControl, encoder)
 #pragma config(Motor,  motorC,          leftMotor,     tmotorEV3_Medium, PIDControl, encoder)
 
+#include "Init.h"
 #include "WRO_Lib.h"
 #include "Collect.h"
 #include "Allocate.h"
-
-void init()
-{
-	stdPower=25;
-	lineMaxPower=60;
-	zonePower=40;
-	//k1=0.2;
-	//k2=10;
-	initSensor(&colorSensor, S4);
-}
 
 void stapt()
 {
@@ -73,7 +64,8 @@ task main()
 	clearTimer(T1);
 	clearDebugStream();
 	init();
-	mainProgram();
+	//mainProgram();
+	//allocation(0);
 	wait10Msec(100);
 	writeDebugStreamLine("Time: %d seconds", time1[T1] / 1000);
 

@@ -3,8 +3,11 @@
 #ifndef CHECK_H
 #define CHECK_H
 
-#define ENC1_DOM1 30
-#define ENC2_DOM1 110
+#define RIGHT_PASS1 238
+#define RIGHT_PASS2 250
+#define BACK_PASS1 240
+#define BACK_PASS2 140
+
 
 task checkY()
 {
@@ -61,29 +64,6 @@ task checkG()
 	}
 }
 
-void check_ind(short dom, short nEnc1, short nEnc2)
-{
-	//for (int i = 0; i < 2; i++)
-	//{
-	//	short enc = (i == 0) ? nEnc1 : nEnc2;
-	//	if(dom != 0)
-	//	{
-	//		back_pass_color(enc, stdPower);
-	//	}
-	//	else
-	//	{
-	//		pass_color(enc, stdPower);
-	//	}
-	//	short color_index = check_color(dom);
-	//	if (color_index != -1)
-	//	{
-	//		nInds[color_index]++;
-	//		indDoms[dom][(dom != 0) ? (i + 1) % 2 : i] = color_index;
-	//	}
-	//}
-
-}
-
 /*
 if (smth == true)
 variable = a;
@@ -95,11 +75,11 @@ variable = (smth == true) ? a : b;
 
 void checkDom1()
 {
-	move_enc(273, stdPower, 'f', "stop");
-	move_enc(TURN, 25, 'r', "stop");
+	move_enc(322, stdPower, 'f', "stop");
+	indDoms[0][0] = check_ind(RIGHT_PASS1, 20, 0);
+	indDoms[0][1] = check_ind(RIGHT_PASS2, stdPower, 0);
+	move_enc(TURNAROUND-RIGHT_PASS1-RIGHT_PASS2, stdPower, 'r', "stop");
 
-	check_ind(0, ENC1_DOM1, ENC2_DOM1);
-	move_enc(TURN, stdPower, 'r', "stop");
 	fwd_black(1, zonePower, "");
 	fwd_white(1, stdPower, "stop");
 	move_enc(TURN, stdPower, 'r', "stop");
@@ -285,7 +265,9 @@ void takeBlueZone()
 	startTask(hapugaC);
 	wait1Msec(750);
 
-	move_enc(700, lineMaxPower, 'b', "");
+	move_enc(550, lineMaxPower, 'b', "");
+	indDoms[1][1] = check_ind(BACK_PASS1, stdPower, 1);
+	indDoms[1][0] = check_ind(BACK_PASS2, stdPower, 1);
 	while(SensorValue[S1] < WHITE)
 		moving(stdPower, 'b');
 	stopmotor();
@@ -383,115 +365,44 @@ void take_ex_and_blue()
 	povright(stdPower, "cross");
 	bricksInRobot[1] = 1; bricksInRobot[3] = 1;
 }
+*/
 
 void takeYellowZone()
 {
-	startTask(hapugaU);
 	Line_enc(250, zonePower, "");
 	LineCross(stdPower, "");
 	povleft(stdPower, "cross");
-	Line_enc(595, stdPower, "stop");
+	startTask(hapugaO);
+	Line_enc(75, stdPower, "stop");
+	Line_enc(445, zonePower, "stop");
+	Line_enc(75, stdPower, "stop");
 
-	move_enc(TURN,stdPower,'l',"stop");
-	startTask(zahvatO);
-	move_enc(160,stdPower,'f',"stop");
-
-	move_enc(240,stdPower,'b',"stop");
-	zahvat('c');
-	move_enc(15,stdPower,'f',"");
-	povleft(stdPower, "cross");
+	move_enc(TURN,stdPower,'r',"stop");
+	move_enc(90,stdPower,'f',"stop");
+	bricksInRobot[0] = 2;
+	hapuga('m');
+	startTask(hapugaC);
+	wait1Msec(300);
+	move_enc(90,stdPower,'b',"stop");
+	povright(stdPower, "");
 
 	Line_enc(50, stdPower, "");
+	startTask(zahvatO);
 	LineCross(zonePower, "");
-	Line_enc(400, zonePower, "");
+	Line_enc(400, lineMaxPower, "");
 	Line_enc(195+CROSS_ENC, stdPower, "stop");
 
-	move_enc(TURN,stdPower,'l',"stop");
-	move_enc(175,stdPower,'f',"stop");
-	hapuga('d');
-
-	bricksInRobot[0] = 2; bricksInRobot[2] = 2;
+	move_enc(TURN,stdPower,'r',"stop");
+	move_enc(90,stdPower,'b',"stop");
+	bricksInRobot[2] = 2;
+	zahvat('m');
+	startTask(zahvatC);
+	wait1Msec(300);
+	move_enc(TURN, stdPower, 'r', "stop");
+	move_enc(250, zonePower, 'f', "");
+	fwd_black(1, stdPower, "");
+	move_enc(CROSS_ENC, stdPower, 'f', "stop");
 	location = 8;
-} */
-
-int check_color(short dom)
-{
-	if (colorSensor.color==2)
-	{
-		playSoundFile("Blue");
-		return 0;
-	}
-	else if (colorSensor.color==4)
-	{
-		playSoundFile("Green");
-		return 1;
-	}
-	else if (colorSensor.color==6)
-	{
-		playSoundFile("Yellow");
-		return 2;
-	}
-	else if(colorSensor.color==3)
-	{
-		playSound(soundBlip);
-		nEncB = nMotorEncoder[motorB];
-		if(dom != 0)
-		{
-			while(nMotorEncoder[motorB] > nEncB - 15)
-			{
-				readSensor(&colorSensor);
-				if(colorSensor.color == 4)
-				{
-					playSoundFile("Green");
-					return 1;
-				}
-				if(colorSensor.color == 6)
-				{
-					playSoundFile("Yellow");
-					return 2;
-				}
-				moving(stdPower, 'b');
-			}
-		}
-		if(dom == 0)
-		{
-			while(nMotorEncoder[motorB] < nEncB + 15)
-			{
-				readSensor(&colorSensor);
-				if(colorSensor.color == 4)
-				{
-					playSoundFile("Green");
-					return 1;
-				}
-				if(colorSensor.color == 6)
-				{
-					playSoundFile("Yellow");
-					return 2;
-				}
-				moving(stdPower, 'f');
-			}
-		}
-		readSensor(&colorSensor);
-		//if(colorSensor.color == 4)
-		//{
-		//	playSoundFile("Green");
-		//	return 1;
-		//}
-		//if(colorSensor.color == 6)
-		//{
-		//	playSoundFile("Yellow");
-		//	return 1;
-		//}
-		//else
-		//{
-		playSoundFile("Blue");
-		return 0;
-		//}
-	}
-	else
-	{
-		playSoundFile("Dog bark 1");
-		return -1;
-	}
 }
+
 #endif

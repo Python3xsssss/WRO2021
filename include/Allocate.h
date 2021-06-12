@@ -3,17 +3,11 @@
 #ifndef ALLOCATE_H
 #define ALLOCATE_H
 
-#define ENC1_DOM 115
-#define ENC2_DOM 185
-#define BEFORE_CROSS 75
+#define FWD_PASS1 300
+#define FWD_PASS2 120
 
-int encs[6]={340, 800, 250, 950, 850, 250};
-
-short our_crosses[5] = {-1,-1,-1,-1,-1};
 short rightWay[2][5] = {{1, 2, 3, 0, -1}, {1, 2, 3, 0, -1}};
-short ourCrosses[5];
 short virtualBricks[4];
-short withoutZone = 0;
 short importantBricks = -2;
 short cur_zone;
 short akkum_gb = 0;
@@ -40,16 +34,16 @@ void akkumGB()
 		moving(stdPower, 'b');
 	while(SensorValue[S1]>BLACK)
 		moving(stdPower, 'b');
-  stopmotor();
-  akkum_gb = 1;
-  importantBricks = -2;
+	stopmotor();
+	akkum_gb = 1;
+	importantBricks = -2;
 }
 
 void akkum_std()
 {
 	while(SensorValue[S1]>BLACK)
 		moving(stdPower, 'b');
-  stopmotor();
+	stopmotor();
 	zahvat('m');
 	bricksInRobot[3] = importantBricks;
 	zahvat('o');
@@ -70,29 +64,19 @@ void put_akkum ()
 		bricksInRobot[3] = importantBricks;
 
 	akkum_gb = 0;
+	location = 7;
 }
 
 void checkDom(short dom)
 {
-	move_enc(5, stdPower, 'b', "stop");
-	while(SensorValue[S3]<WHITE)
-	{
-		motor[motorC]=stdPower;
-	}
-	while(SensorValue[S3]>BLACK)
-	{
-		motor[motorC]=stdPower;
-	}
-	while(SensorValue[S3]<WHITE)
-	{
-		motor[motorC]=stdPower;
-	}
-	mot1_enc(116, 'c', stdPower, 'b', "stop");
-	/*	check_ind(dom, ENC1_DOM, ENC2_DOM);*/
-	if(dom != 0)
-	{
-		fwd_black(2, stdPower, "");
-	}
+	Line_enc(200,stdPower,"stop");
+	move_enc(TURN, stdPower, 'r', "stop");
+	indDoms[dom][0] = check_ind(FWD_PASS1, stdPower, dom);
+	indDoms[dom][1] = check_ind(FWD_PASS2, stdPower, dom);
+	move_enc(FWD_PASS2+200, zonePower, 'b', "");
+	while(SensorValue[S1] < GREY + 20)
+		moving(stdPower, 'b');
+	stopmotor();
 }
 
 int assignment(int zone)
@@ -161,47 +145,11 @@ void calcDom(short dom)
 	}
 }
 
-void putInDom(short hapuga1, short hapuga2, short zahvat1, short zahvat2, short dom, short partAlloc)
+void put (short hapuga1, short hapuga2, short zahvat1, short zahvat2, short dom, bool ifBack)
 {
-	bool ifBack = false;
-	if(indDoms[dom][0] == -1 && indDoms[dom][1] == -1) // body of this IF - to the function
-	{
-		LineRed(stdPower, "stop");
-		checkDom(dom);
-		if(hapuga1 == 0 && hapuga2 == 0 && zahvat1 == 0 && zahvat2 == 0)
-		{
-			calcDom(dom);
-			hapuga1 = finalRazvoz[dom][0]; hapuga2 = finalRazvoz[dom][1];
-			zahvat1 = finalRazvoz[dom][2]; zahvat2 = finalRazvoz[dom][3];
-		}
-		if(hapuga1 == 0 && hapuga2 == 0)
-		{
-			povleft(stdPower, "cross");
-			ifBack = true;
-		}
-		else
-		{
-			povright(stdPower, "cross");
-		}
-		//otyezd nazad v ishodnuyu
-	}
-	else
-	{
-		if(partAlloc == 0)
-		{
-			calcDom(dom);
-			hapuga1 = finalRazvoz[dom][0]; hapuga2 = finalRazvoz[dom][1];
-			zahvat1 = finalRazvoz[dom][2]; zahvat2 = finalRazvoz[dom][3];
-		}
-		if (hapuga1)
-		{
-			startTask(hapugaO);
-		}
-		Line_enc(180, stdPower, "");
-	}
-
 	if (hapuga1)
 	{
+		hapuga('o');
 		nMotorEncoder[motorB]=0;
 		LineRed(stdPower, "");
 		int enc = nMotorEncoder[motorB];
@@ -225,9 +173,9 @@ void putInDom(short hapuga1, short hapuga2, short zahvat1, short zahvat2, short 
 		if (!ifBack)
 		{
 			if (dom == 0) // mb uzhe ne nado
-				povright(stdPower,"");
+			 move_enc (TURNAROUND, stdPower,'r',"stop");
 			else
-				povleft(stdPower,"");
+				move_enc(TURNAROUND,stdPower,'l',"stop");
 		}
 		//if(!hapuga2)
 		//{
@@ -266,21 +214,12 @@ void putInDom(short hapuga1, short hapuga2, short zahvat1, short zahvat2, short 
 	if (!zahvat1 && !zahvat2 && !ifBack)
 	{
 		if (dom == 0) // mb uzhe ne nado
-			povright(stdPower,"");
+			move_enc(TURNAROUND,stdPower,'r',"stop");
 		else
-			povleft(stdPower,"");
+      move_enc(TURNAROUND,stdPower,'l',"stop");
 	}
 
 	startTask(hapugaC);
-
-	if (dom == 1)
-	{
-		Line_enc(375, zonePower, "");
-	}
-
-	LineCross(stdPower, "stop");
-	for (int i = 0; i < 4; i++)
-		finalRazvoz[dom][i] = 0;
 	if (bricksInRobot[3] != -2 && zahvatPos != 0)
 		wait1Msec(150);
 	startTask(zahvatC);
@@ -288,63 +227,67 @@ void putInDom(short hapuga1, short hapuga2, short zahvat1, short zahvat2, short 
 		wait1Msec(1800);
 }
 
-void crosses_new(short destination, const string ifStop)
+void putInDom(short hapuga1, short hapuga2, short zahvat1, short zahvat2, short dom, short partAlloc)
 {
-	for(short i = location; i != destination; i = (location < destination) ? i+1 : i-1)
+	bool ifBack = false;
+	if (location == 8)
 	{
-		location = i;
-		int shift = (abs(i - destination) == 1) ? BEFORE_CROSS : 0;
-		int curr_enc = encs[(location > destination) ? i-1 : i] - shift;
-		if(!sensors)
-			Line_enc(curr_enc, lineMaxPower, "");
-		else
-			Line1_enc(curr_enc, lineMaxPower, "");
-	}
-	LineCross(stdPower, "");
-
-	if(ifStop == "stop" || ifStop == "STOP" || ifStop == "Stop" || ifStop == "s")
-		stopmotor();
-}
-
-void move_to_new(short destination, const string ifTurn1, const string ifTurn2)
-{
-	if(location == 8)
-	{
-		return;
-	}
-	if(location < 8 && location != destination)
-	{
-		if(ifTurn1 == "turn")// && location != 9)
+		if (bricksInRobot[1] == indDoms[1][0] || bricksInRobot[1] == indDoms[1][1] || bricksInRobot[0] == indDoms[1][0] || bricksInRobot[0] == indDoms[1][1])
 		{
-			turning(destination);
-			if (location == 7) // accumulator
-			{
-				location = 4;
-			}
-
-      old_location = location;
-			crosses_new(destination, "");
-
-			if(ifTurn2  == "turn")
-			{
-				if((old_location < destination && destination % 2 == 1) || (old_location > destination && destination % 2 == 0))
-				{
-					povright(stdPower, "cross");
-				}
-				else
-				{
-					povleft(stdPower, "cross");
-				}
-			}
-			else
-			{
-				stopmotor();
-			}
+			povleft(stdPower, "");
+		}
+		else
+		{
+   		povright(stdPower, "");
+   		Line_enc(50, stdPower,"");
+      Line_enc(350, zonePower,"");
+      LineCross(stdPower,"stop");
+      location = 4;
+      return;
 		}
 	}
+	//
+	if(indDoms[dom][0] == -1 && indDoms[dom][1] == -1) // body of this IF - to the function
+	{
+		  checkDom(dom);
+			calcDom(dom);
+			hapuga1 = finalRazvoz[dom][0]; hapuga2 = finalRazvoz[dom][1];
+			zahvat1 = finalRazvoz[dom][2]; zahvat2 = finalRazvoz[dom][3];
+		if(!hapuga1 && !hapuga2)
+		{
+			povright(stdPower, "");
+			ifBack = true;
+		}
+		else
+		{
+			povleft(stdPower, "");
+		}
+	}
+	else
+	{
+		if(partAlloc == 0)
+		{
+			calcDom(dom);
+			hapuga1 = finalRazvoz[dom][0]; hapuga2 = finalRazvoz[dom][1];
+			zahvat1 = finalRazvoz[dom][2]; zahvat2 = finalRazvoz[dom][3];
+		}
+		if (hapuga1)
+		{
+			startTask(hapugaO);
+		}
+		Line_enc(180, stdPower, "");
+	}
+
+//sama vigruzka
+  put (hapuga1, hapuga2, zahvat1, zahvat2, dom, ifBack);
+	if (dom == 1)
+	{
+		Line_enc(425, zonePower, "");
+	}
+	LineCross(stdPower, "stop");
+	for (int i = 0; i < 4; i++)
+		finalRazvoz[dom][i] = 0;
 }
-
-
 
 void calculation(short col)
 {
@@ -424,7 +367,7 @@ void allocation(short part)
 	for(short i = 0; i < 4 && !zahvats_empty(); i++)
 	{
 		our_crosses[i] = assignment(rightWay[part][i]);
-		move_to_new(our_crosses[i], "turn", "turn");
+		move_to(our_crosses[i], "turn", "turn");
 		cur_zone = rightWay[part][i];
 		if(cur_zone == 3)
 			put_akkum();
@@ -437,7 +380,6 @@ void allocation(short part)
 
 void allocateAllBricks()
 {
-	//takeBlueZone();
 	writeDebugStreamLine("Time after blue zone: %d sec", time1[T1] / 1000);
 	allocation(0);
 	writeDebugStreamLine("Time after first allocation: %d sec", time1[T1] / 1000);

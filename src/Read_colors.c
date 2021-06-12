@@ -1,5 +1,6 @@
  #include "hitechnic-colour-v2.h"
-
+char * fileInd = "Indicators";
+char * fileWB = "WhiteBlack";
 
 tHTCS2 colorSensor;
 
@@ -19,13 +20,22 @@ void output ()
 	{
 		if (i == 3)
 		{
-			writeDebugStreamLine("%s", colors[q]);
+			writeDebugStream("\n%s INDICATOR: ", colors[q]);
 			q++;
 			i = 0;
 		}
-		writeDebugStreamLine("%d ", readValue);
+		writeDebugStream("%d ", readValue);
 		i++;
 	}
+	fileClose(fileHandle);
+
+	writeDebugStreamLine("");
+
+	fileHandle = fileOpenRead(fileWB);
+	fileReadShort(fileHandle, &readValue);
+	writeDebugStreamLine("WHITE: %d", readValue);
+	fileReadShort(fileHandle, &readValue);
+	writeDebugStreamLine("BLACK: %d", readValue);
 	fileClose(fileHandle);
 }
 
@@ -38,22 +48,22 @@ task main()
 	displayCenteredBigTextLine(7, "Rewrite colors?");
 	waitForButtonPress();
 	eraseDisplay();
-	if (getButtonPress(DOWN_BUTTON) != 1)
+	if (getButtonPress(LEFT_BUTTON) != 1 && getButtonPress(RIGHT_BUTTON)!=1)
 	{
+		output();
 		return;
 	}
-	waitForButtonPress();
-	if (getButtonPress(UP_BUTTON) == 1)
+	else if (getButtonPress(LEFT_BUTTON) == 1)
 	{
 		fileHandle = fileOpenWrite(fileInd);
 		wait1Msec(500);
 		for (i = 0; i < 3; i++)
 		{
-			displayCenteredBigTextLine(4, "%s", colors[i]);
+			displayCenteredBigTextLine(3, "%s", colors[i]);
 			do
 			{
 				readSensor(&colorSensor);
-				displayBigTextLine(7, "R:%d G:%d B:%d", colorSensor.red, colorSensor.green, colorSensor.blue);
+				displayCenteredBigTextLine(7, "R:%d G:%d B:%d", colorSensor.red, colorSensor.green, colorSensor.blue);
 				wait1Msec(100);
 			}
 			while (getButtonPress(ENTER_BUTTON) == 0);
@@ -64,33 +74,27 @@ task main()
 		}
 		fileClose(fileHandle);
 	}
-	wait1Msec(1000);
-
-	waitForButtonPress();
-	if (getButtonPress(LEFT_BUTTON) == 1)
+	else if (getButtonPress(RIGHT_BUTTON) == 1)
 	{
 		fileHandle = fileOpenWrite(fileWB);
-		displayCenteredBigTextLine(4, "%s", "WHITE");
+		displayCenteredBigTextLine(3, "%s", "WHITE");
 		do
 		{
 			val=SensorValue[S1];
-			displayBigTextLine(7, "B:%d", val );
-			wait1Msec(100);
+			displayCenteredBigTextLine(7, "W:%d", val );
+			wait1Msec(500);
 		}
 		while (getButtonPress(ENTER_BUTTON) == 0);
 		fileWriteShort(fileHandle, val);
-		wait1Msec(1000);
-		waitForButtonPress();
-		displayCenteredBigTextLine(4, "%s", "BLACK");
+		displayCenteredBigTextLine(3, "%s", "BLACK");
 		do
 		{
 			val=SensorValue[S1];
-			displayBigTextLine(7, "B:%d", val );
-			wait1Msec(100);
+			displayCenteredBigTextLine(7, "B:%d", val);
+			wait1Msec(500);
 		}
 		while (getButtonPress(ENTER_BUTTON) == 0);
 		fileWriteShort(fileHandle, val);
-		wait1Msec(1000);
         fileClose(fileHandle);
 	}
 
