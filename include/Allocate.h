@@ -3,12 +3,11 @@
 #ifndef ALLOCATE_H
 #define ALLOCATE_H
 
-#define FWD_PASS1 300
-#define FWD_PASS2 120
+#define FWD_PASS1 325
+#define FWD_PASS2 150
 
 short rightWay[2][5] = {{1, 2, 3, 0, -1}, {1, 2, 3, 0, -1}};
 short virtualBricks[4];
-short importantBricks = -2;
 short cur_zone;
 short akkum_gb = 0;
 
@@ -36,32 +35,31 @@ void akkumGB()
 		moving(stdPower, 'b');
 	stopmotor();
 	akkum_gb = 1;
-	importantBricks = -2;
+	bricksInRobot[3] = -2;
 }
 
 void akkum_std()
 {
-	while(SensorValue[S1]>BLACK)
-		moving(stdPower, 'b');
+	if(!akkum_gb)
+	{
+		while(SensorValue[S1]>BLACK)
+			moving(stdPower, 'b');
+	}
 	stopmotor();
-	zahvat('m');
-	bricksInRobot[3] = importantBricks;
 	zahvat('o');
-	zahvat('c');
+	motor[motorD] = -25 - sgn(bricksInRobot[3] + 2)*55;
+	wait10Msec(200);
+	zahvatPos = 0;
+	bricksInRobot[2] = -2;
 }
 
 void put_akkum ()
 {
-	importantBricks = bricksInRobot[3];
-	bricksInRobot[3] = -2;
-	if (importantBricks != -2 && nInds[importantBricks] != 2)
+	if (bricksInRobot[3] != -2 && nInds[bricksInRobot[3]] != 2)
 		akkumGB();
 
 	if (bricksInRobot[2] == -1 || nInds[bricksInRobot[2]] != 2)
 		akkum_std();
-
-	if(!akkum_gb)
-		bricksInRobot[3] = importantBricks;
 
 	akkum_gb = 0;
 	location = 7;
@@ -132,6 +130,7 @@ void calcDom(short dom)
 				break;
 			}
 		}
+
 		if(i1 < 4)
 		{
 			finalRazvoz[dom][i1] = 1;
@@ -280,6 +279,7 @@ void putInDom(short hapuga1, short hapuga2, short zahvat1, short zahvat2, short 
 
 //sama vigruzka
   put (hapuga1, hapuga2, zahvat1, zahvat2, dom, ifBack);
+
 	if (dom == 1)
 	{
 		Line_enc(425, zonePower, "");
@@ -295,10 +295,10 @@ void calculation(short col)
 	short i1, i2;
 	for(short i = 0; i<4; i++)
 	{
-		ourWay[i] = -1*(col + 1);
+		ourWay[i] = -1;
 		virtualBricks[i] = bricksInRobot[i];
 	}
-	ourWay[4] = -1*(col + 1);
+	ourWay[4] = -1;
 	if(nInds[col] < 2)
 	{
 		virtualBricks[1]=-2;
@@ -316,7 +316,7 @@ void calculation(short col)
 		i1 = 0; i2 = 0;
 		if(rightWay[col][i] != 3)
 		{
-			if(/*indDoms[rightWay[col][i]][0]==col||indDoms[rightWay[col][i]][1]==col||*/ indDoms[rightWay[col][i]][0]==col*2 || indDoms[rightWay[col][i]][1]==col*2)
+			if(indDoms[rightWay[col][i]][0]==col || indDoms[rightWay[col][i]][1]==col || indDoms[rightWay[col][i]][0]==col*2 || indDoms[rightWay[col][i]][1]==col*2)
 			{
 				ourWay[counter] = rightWay[col][i];
 				counter++;
@@ -363,16 +363,23 @@ void calculation(short col)
 
 void allocation(short part)
 {
+	if(part == 1)
+		calculation(part);
+	else
+		for(short i = 0; i < 4; i++)
+			ourWay[i] = rightWay[part][i];
+
+	writeDebugStreamLine("%d", ourWay[0]);
 	cur_zone = -1;
 	for(short i = 0; i < 4 && !zahvats_empty(); i++)
 	{
-		our_crosses[i] = assignment(rightWay[part][i]);
+		our_crosses[i] = assignment(ourWay[i]);
 		move_to(our_crosses[i], "turn", "turn");
-		cur_zone = rightWay[part][i];
+		cur_zone = ourWay[i];
 		if(cur_zone == 3)
 			put_akkum();
 		else
-			putInDom(0, 0, 0, 0, cur_zone, part);
+			putInDom(finalRazvoz[ourWay[i]][0], finalRazvoz[ourWay[i]][1], finalRazvoz[ourWay[i]][2], finalRazvoz[ourWay[i]][3], cur_zone, part);
 		if(i == 0 && location == 8)
 			location = 4;
 	}

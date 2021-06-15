@@ -13,29 +13,18 @@ void stapt()
 {
 	move_enc(50, stdPower, 'f', "");
 	move_enc(150, zonePower, 'f', "");
+	startTask(hapugaC);
 	Line1Cross(lineMaxPower, "");
-	//povleft(stdPower, "cross");
 }
 
 void finish()
 {
-	motor[motorD]=-50;
-	motor[motorA]=50;
-	if(location == 5)
-		move_to(4, "turn", "");
+	move_to(4, "turn", "turn");
 
-	if(location == 4)
-	{
-		Line_enc(100, stdPower, "");
-		Line_enc(1750, lineMaxPower, "");
-		LineCross(stdPower, "stop");
-	}
-
-	else
-		move_to(0, "turn", "");
-
-	//move_enc(TURN-18, stdPower, 'r', "stop");
-	povright(stdPower, "cross");
+	Line_enc(100, stdPower, "");
+	startTask(zahvatO);
+	startTask(hapugaO);
+	Line_enc(350, zonePower, "");
 	LineCross(stdPower, "stop");
 	mot1_enc(50, 'b', stdPower, 'f', "stop");
 	mot1_enc(50, 'c', stdPower, 'f', "stop");
@@ -61,12 +50,27 @@ void mainProgram()
 task main()
 {
 	/*!!NE ZABIVAY INIT!!*/
+	init();
+	zahvat('c');
+	hapuga('c');
 	clearTimer(T1);
 	clearDebugStream();
-	init();
 	//mainProgram();
-	//allocation(0);
-	wait10Msec(100);
+	location = 8;
+	bricksInRobot[0] = 2;
+	bricksInRobot[1] = 1;
+	bricksInRobot[2] = 2;
+	bricksInRobot[3] = 1;
+	indDoms[0][0] = 0;
+	indDoms[0][1] = 1;
+	indDoms[1][0] = 0;
+	indDoms[1][1] = 1;
+	indDoms[2][0] = 2;
+	indDoms[2][1] = -1;
+	nInds[0] = 2;
+	nInds[1] = 2;
+	nInds[2] = 1;
+	allocation(1);
 	writeDebugStreamLine("Time: %d seconds", time1[T1] / 1000);
 
 }

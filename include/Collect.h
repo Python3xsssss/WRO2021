@@ -11,14 +11,17 @@
 
 task checkY()
 {
+	Line1S3(stdPower);
 	readSensor(&colorSensor);
 	short j = 0;
 	while(j < 3 || nMotorEncoder[motorB] < 300)
 	{
+		Line1S3(stdPower);
 		readSensor(&colorSensor);
 		writeDebugStreamLine("R: %d, G: %d", colorSensor.red, colorSensor.green);
 		while(colorSensor.red < 6 && colorSensor.green < 6)
 		{
+			Line1S3(stdPower);
 			j = 0;
 			readSensor(&colorSensor);
 			writeDebugStreamLine("R: %d, G: %d", colorSensor.red, colorSensor.green);
@@ -38,15 +41,17 @@ task checkY()
 
 task checkG()
 {
+	Line1S3(stdPower);
 	readSensor(&colorSensor);
 	short j = 0;
-	writeDebugStreamLine("G: %d, B: %d", colorSensor.green, colorSensor.blue);
 	while(j < 3 || nMotorEncoder[motorB] < 600)
 	{
+		Line1S3(stdPower);
 		readSensor(&colorSensor);
 		writeDebugStreamLine("G: %d, B: %d", colorSensor.green, colorSensor.blue);
 		while(colorSensor.green < 10 && colorSensor.blue < 10)
 		{
+			Line1S3(stdPower);
 			j = 0;
 			readSensor(&colorSensor);
 			writeDebugStreamLine("G: %d, B: %d", colorSensor.green, colorSensor.blue);
@@ -75,7 +80,7 @@ variable = (smth == true) ? a : b;
 
 void checkDom1()
 {
-	move_enc(322, stdPower, 'f', "stop");
+	move_enc(290, stdPower, 'f', "stop");
 	indDoms[0][0] = check_ind(RIGHT_PASS1, 20, 0);
 	indDoms[0][1] = check_ind(RIGHT_PASS2, stdPower, 0);
 	move_enc(TURNAROUND-RIGHT_PASS1-RIGHT_PASS2, stdPower, 'r', "stop");
@@ -83,6 +88,7 @@ void checkDom1()
 	fwd_black(1, zonePower, "");
 	fwd_white(1, stdPower, "stop");
 	move_enc(TURN, stdPower, 'r', "stop");
+	startTask(hapugaO);
 }
 
 bool check_yellow_ex()
@@ -237,23 +243,23 @@ void takeBlueZone()
 {
 	nMotorEncoder[motorB]=0;
 	Line1S1_enc(50, stdPower, "");
-	Line1S1_enc(120, zonePower, "");
+	Line1S1_enc(150, zonePower, "");
 	Line1S1White(stdPower, "stop");
 	move_enc(TURN, stdPower, 'l', "stop");
 	bricksInRobot[3] = 0;
 	startTask(zahvatM);
-
 	move_enc(110, zonePower, 'f', "stop");
+	wait10Msec(100);
 	move_enc(40, lineMaxPower, 'b', "stop");
 	startTask(zahvatC);
 	wait1Msec(750);
 
-	move_enc(TURN+6, stdPower, 'r', "stop");
+	move_enc(TURN+3, stdPower, 'r', "stop");
 	fwd_white(1, zonePower, "");
 	fwd_black(1, zonePower, "");
 
-	move_enc(265, zonePower, 'f', "stop");
-	move_enc(TURN+7, stdPower, 'r', "stop");
+	move_enc(272, zonePower, 'f', "stop");
+	move_enc(TURN+4, stdPower, 'r', "stop");
 
 	bricksInRobot[1] = 0;
 	startTask(hapugaM);
@@ -369,40 +375,44 @@ void take_ex_and_blue()
 
 void takeYellowZone()
 {
-	Line_enc(250, zonePower, "");
+	Line_enc(50, stdPower, "");
+	Line_enc(350, lineMaxPower, "");
 	LineCross(stdPower, "");
 	povleft(stdPower, "cross");
+	Line_enc(75, stdPower, "");
 	startTask(hapugaO);
-	Line_enc(75, stdPower, "stop");
-	Line_enc(445, zonePower, "stop");
+	Line_enc(465, lineMaxPower, "");
 	Line_enc(75, stdPower, "stop");
 
-	move_enc(TURN,stdPower,'r',"stop");
-	move_enc(90,stdPower,'f',"stop");
-	bricksInRobot[0] = 2;
+	move_enc(TURN, stdPower, 'r', "stop");
+	move_enc(130, stdPower, 'f', "stop");
 	hapuga('m');
 	startTask(hapugaC);
-	wait1Msec(300);
-	move_enc(90,stdPower,'b',"stop");
+	wait1Msec(100);
+	move_enc(110, zonePower, 'b', "stop");
 	povright(stdPower, "");
 
 	Line_enc(50, stdPower, "");
-	startTask(zahvatO);
 	LineCross(zonePower, "");
-	Line_enc(400, lineMaxPower, "");
-	Line_enc(195+CROSS_ENC, stdPower, "stop");
+	Line_enc(600, lineMaxPower, "");
+	Line_enc(CROSS_ENC, stdPower, "stop");
 
-	move_enc(TURN,stdPower,'r',"stop");
-	move_enc(90,stdPower,'b',"stop");
-	bricksInRobot[2] = 2;
+	move_enc(TURN-150, stdPower, 'r', "");
+	startTask(zahvatO);
+	move_enc(150, stdPower, 'r', "stop");
+	wait1Msec(700);
+	move_enc(135, stdPower, 'b', "stop");
+
 	zahvat('m');
 	startTask(zahvatC);
-	wait1Msec(300);
-	move_enc(TURN, stdPower, 'r', "stop");
-	move_enc(250, zonePower, 'f', "");
-	fwd_black(1, stdPower, "");
+	wait1Msec(100);
+	move_enc(125, lineMaxPower, 'f', "stop");
+	move_enc(TURN, stdPower, 'l', "stop");
+	move_enc(400, lineMaxPower, 'f', "");
+	fwd_black(1, zonePower, "");
 	move_enc(CROSS_ENC, stdPower, 'f', "stop");
 	location = 8;
+	bricksInRobot[0] = 2; bricksInRobot[2] = 2;
 }
 
 #endif

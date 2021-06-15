@@ -5,13 +5,16 @@
 
 #include "hitechnic-colour-v2.h"
 
+#define WHITE 57
+#define BLACK 15
+
 tHTCS2 colorSensor;
 char * fileInd = "Indicators";
-char * fileWB = "WhiteBlack";
+//char * fileWB = "WhiteBlack";
 long fileHandle;
 
 short /*valB, valW,*/ stdPower = 25, zonePower = 40, lineMaxPower = 60;
-short BLACK, WHITE, GREY;
+short GREY;
 
 typedef struct {
 	short red;
@@ -25,9 +28,9 @@ Indicator blueInd, greenInd, yellowInd;
 
 void read ()
 {
-	fileHandle = fileOpenRead(fileWB);
+	//fileHandle = fileOpenRead(fileWB);
 
-  fileClose(fileHandle);
+  //fileClose(fileHandle);
   fileHandle = fileOpenRead(fileInd);
   fileReadShort(fileHandle, &blueInd.red);
   fileReadShort(fileHandle, &blueInd.green);
