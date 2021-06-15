@@ -307,71 +307,49 @@ void take_ex_and_blue()
 	writeDebugStreamLine("pauseCounter: %d", pauseCounter);
 }
 
-
-/*void takeGreenZone()
+void approachToGreen()
 {
-	if(location != 4)
+	if (location == 1)
 	{
-		startTask(hapugaU);
+		povright(stdPower,"cross");
+		LineCross(stdPower,"");
+		Line_enc(250,stdPower,"stop");
+		move_enc(TURN,stdPower,'r',"stop");
+		while (SensorValue[S2]>(WHITE-20))
+			moving('b',stdPower);
+		stopmotor();
 	}
-	startTask(zahvatCor);
-	if(location < 3)
+	if (location == 7)
 	{
-		while(SensorValue[S1]<50)
-		{
-			Line(stdPower);
-		}
-		LineCross(stdPower, "stop");
-		move_enc(70, stdPower, 'b', "stop");
-		move_enc(TURN+10, stdPower, 'r', "stop");
-		startTask(hapugaD);
-		move_enc(70, stdPower, 'b', "stop");
+		povleftSpec(stdPower);
+		Line1Cross(stdPower,"stop");
+		move_enc(50,stdPower,'f',"stop");
+		mot1_enc(ONEMOTORTURN,'c',stdPower,'b', "stop");
 	}
-	if(location > 3)
-	{
-		if(location == 5)
-		{
-			LineCross(lineMaxPower, "");
-			Line_enc(200, lineMaxPower, "");
-		}
-		lineWhite(lineMaxPower, "");
-		LineCross(stdPower, "stop");
-		move_enc(TURN, stdPower, 'l', "stop");
-		startTask(hapugaD);
-		move_enc(70, stdPower, 'b', "stop");
-	}
-	fwd_black(2, stdPower, "stop");
-	nMotorEncoder[motorA]=0;
-	while(nMotorEncoder[motorA]<HAPUGAG)
-	{
-		motor[motorA]=15;
-	}
-	motor[motorA]=0;
-	move_enc(130, 18, 'f', "stop");
-	hapuga('u');
-	while(SensorValue[S2]>BLACK)
-	{
-		moving(stdPower, 'b');
-	}
-	stopmotor();
-	povleft(stdPower, "cross");
-	LineCross(stdPower, "");
-	Line_enc(240, stdPower, "stop");
-	move_enc(TURN, stdPower, 'l',"stop");
-	move_enc(200, stdPower, 'f',"stop");
-	zahvat('m');
-	wait10Msec(10);
+}
+
+void takeGreenZone()
+{
+	hapuga('g');
+	move_enc(60, stdPower,'f',"stop");
+	motor[motorA] = -25;
+	move_enc(60, stdPower,'b',"stop");
+	motor[motorA] = 0;
+	povright(stdPower,"");
+	LineCross(stdPower,"stop");
+	Line_enc(250, stdPower,"stop");
+	move_enc(TURN,stdPower,'r',"stop");
+	move_enc(100, stdPower,'f',"stop");
 	zahvat('g');
-	wait10Msec(15);
-	move_enc(180, 18, 'b', "stop");
-	zahvat('c');
-	povleft(stdPower, "");
-	lineWhite(stdPower, "");
-	LineCross(stdPower, "");
-	povright(stdPower, "cross");
+	move_enc(100, stdPower,'b',"stop");
+	motor[motorD] = -25;
+	while(SensorValue[S2]>BLACK)
+		motor[motorB]=stdPower;
+	stopmotor();
+	motor[motorD] = 0;
+	mot1_enc(200,'c',stdPower,'f',"stop");
 	bricksInRobot[1] = 1; bricksInRobot[3] = 1;
 }
-*/
 
 void takeYellowZone()
 {

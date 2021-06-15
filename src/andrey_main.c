@@ -43,8 +43,8 @@ void mainProgram()
 {
 	stapt();
 	take_ex_and_blue();
-	//allocateAllBricks();
-	//finish();
+	allocateAllBricks();
+	finish();
 }
 
 task main()

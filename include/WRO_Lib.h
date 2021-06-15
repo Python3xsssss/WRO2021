@@ -9,8 +9,7 @@
 #define CROSS_ENC 100
 #define SPEC_CROSS_L 48
 #define SPEC_CROSS_R 155
-#define HAPUGAM 25
-#define ZAHVATG 30
+#define ZAHVATG 124
 //#define HAPUGAG 64
 #define BEFORE_CROSS 90
 
@@ -740,6 +739,7 @@ void hapuga(char dir)
 {
 	short speed;
 	speed = (bricksInRobot[1] > -2) ? 25 : 80;
+	nMotorEncoder[motorA] = 0;
 
 	if(dir == 'c' && hap != 0)
 	{
@@ -784,9 +784,9 @@ void hapuga(char dir)
 
 	if(dir == 'g')
 	{
-		while(nMotorEncoder[motorA] > -ZAHVATG)
+		while(nMotorEncoder[motorA] < ZAHVATG)
 		{
-			motor[motorA]=-15;
+			motor[motorA]=15;
 		}
 	}
 	motor[motorA]=0;
@@ -796,6 +796,7 @@ void zahvat(char dir)
 {
 	short speed;
 	speed = (bricksInRobot[3] > -2) ? 25 : 80;
+	nMotorEncoder[motorD] = 0;
 
 	if(dir == 'c' && zahvatPos != 0)
 	{
@@ -840,9 +841,9 @@ void zahvat(char dir)
 
 	if(dir == 'g')
 	{
-		while(nMotorEncoder[motorD] > -ZAHVATG)
+		while(nMotorEncoder[motorD] < ZAHVATG)
 		{
-			motor[motorD]=-15;
+			motor[motorD]=15;
 		}
 	}
 	motor[motorD]=0;

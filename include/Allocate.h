@@ -390,11 +390,13 @@ void allocateAllBricks()
 	writeDebugStreamLine("Time after blue zone: %d sec", time1[T1] / 1000);
 	allocation(0);
 	writeDebugStreamLine("Time after first allocation: %d sec", time1[T1] / 1000);
-	//takeGreenZone();
-	//takeYellowZone();
-	//writeDebugStreamLine("Time after yellow zone: %d sec", time1[T1] / 1000);
-	//allocation(1);
-	//writeDebugStreamLine("Time after second allocation: %d", time1[T1] / 1000);
+	approachToGreen();
+	takeGreenZone();
+	writeDebugStreamLine("Time after green zone: %d sec", time1[T1] / 1000);
+	takeYellowZone();
+	writeDebugStreamLine("Time after yellow zone: %d sec", time1[T1] / 1000);
+	allocation(1);
+	writeDebugStreamLine("Time after second allocation: %d", time1[T1] / 1000);
 }
 
 
