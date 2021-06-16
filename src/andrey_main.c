@@ -19,7 +19,7 @@ void stapt()
 
 void finish()
 {
-	move_to(4, "turn", "turn");
+	move_to(0, "turn", "turn");
 
 	Line_enc(100, stdPower, "");
 	startTask(zahvatO);
@@ -55,22 +55,23 @@ task main()
 	hapuga('c');
 	clearTimer(T1);
 	clearDebugStream();
+	move_enc(TURN, stdPower, 'l', "stop");
 	//mainProgram();
-	location = 8;
-	bricksInRobot[0] = 2;
-	bricksInRobot[1] = 1;
-	bricksInRobot[2] = 2;
-	bricksInRobot[3] = 1;
-	indDoms[0][0] = 0;
-	indDoms[0][1] = 1;
-	indDoms[1][0] = 0;
-	indDoms[1][1] = 1;
-	indDoms[2][0] = 2;
-	indDoms[2][1] = -1;
-	nInds[0] = 2;
-	nInds[1] = 2;
-	nInds[2] = 1;
-	allocation(1);
+	//location = 8;
+	//bricksInRobot[0] = 2;
+	//bricksInRobot[1] = 1;
+	//bricksInRobot[2] = 2;
+	//bricksInRobot[3] = 1;
+	//indDoms[0][0] = 0;
+	//indDoms[0][1] = 1;
+	//indDoms[1][0] = 0;
+	//indDoms[1][1] = 1;
+	//indDoms[2][0] = 2;
+	//indDoms[2][1] = -1;
+	//nInds[0] = 2;
+	//nInds[1] = 2;
+	//nInds[2] = 1;
+	//allocation(1);
 	writeDebugStreamLine("Time: %d seconds", time1[T1] / 1000);
 
 }

@@ -307,7 +307,7 @@ void moving_sync(short speed, char dir)
 		ifRazgon = 0;
 }
 
-void razgon(short speed, char dir, int nEnc)
+void razgon_sync(short speed, char dir, int nEnc)
 {
 	ifRazgon = 1;
 	short i = 0;
@@ -373,7 +373,7 @@ void tormoz(float speed, char dir)
 	motor[motorC] = 0;
 }
 
-void razgon_turn(short speed, char dir, int nEnc)
+void razgon(short speed, char dir, int nEnc)
 {
 	short i = 0;
 
@@ -405,7 +405,7 @@ void move_enc(int nEnc, short speed, char dir, const string ifStop)
 			decrease = 1;
 
 		if(motor[motorB] == 0 && motor[motorC] == 0)
-			razgon(speed, dir, nEnc);
+			razgon_sync(speed, dir, nEnc);
 
 		while(abs(nMotorEncoder[motorB]) <= nEnc  - 30*decrease)
 			moving_sync(speed, dir);
@@ -417,10 +417,10 @@ void move_enc(int nEnc, short speed, char dir, const string ifStop)
 	else
 	{
 		if(motor[motorB] == 0 && motor[motorC] == 0)
-			razgon_turn(speed, dir, nEnc);
+			razgon(speed, dir, nEnc);
 
 		while(average() < nEnc)
-			moving_sync(speed, dir);
+			moving(speed, dir);
 
 		if(ifStop == "stop" || ifStop == "Stop" || ifStop == "STOP")
 			stopmotor();
@@ -1033,6 +1033,17 @@ void crosses(short destination, const string ifStop)
 
 void move_to(short destination, const string ifTurn1, const string ifTurn2)
 {
+	if(location == destination)
+	{
+		if(location == 4 && destination == 4)
+		{
+			povright(stdPower, "");
+			move_enc(CROSS_ENC, stdPower, 'b', "stop");
+		}
+		old_location = location;
+		location = destination;
+		return;
+	}
 	if(location == 8)
 	{
 		writeDebugStreamLine("%d", ourWay[0]);
@@ -1048,7 +1059,7 @@ void move_to(short destination, const string ifTurn1, const string ifTurn2)
 			location = 4;
 		}
 	}
-	if(location < 8 && location != destination)
+	if(location < 8)
 	{
 		if(ifTurn1 == "turn")// && location != 9)
 		{
