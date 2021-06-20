@@ -80,7 +80,7 @@ variable = (smth == true) ? a : b;
 
 void checkDom1()
 {
-	move_enc(290, stdPower, 'f', "stop");
+	move_enc(282, stdPower, 'f', "stop");
 	indDoms[0][0] = check_ind(RIGHT_PASS1, 20, 0);
 	indDoms[0][1] = check_ind(RIGHT_PASS2, stdPower, 0);
 	move_enc(TURNAROUND-RIGHT_PASS1-RIGHT_PASS2, stdPower, 'r', "stop");
@@ -132,18 +132,14 @@ void take_yellow_ex()
 
 	move_enc(245, stdPower, 'f', "stop");
 	startTask(zahvatO);
-	bricksInRobot[1] = -1;
 	hapuga('m');
-	bricksInRobot[1] = -2;
 	startTask(hapugaC);
 	wait1Msec(75);
 	move_enc(70, stdPower, 'b', "stop");
 	move_enc(TURNAROUND-12, stdPower, 'l', "stop");
 	move_enc(260, stdPower, 'b', "stop");
 	wait10Msec(5);
-	bricksInRobot[3] = -1;
 	zahvat('m');
-	bricksInRobot[3] = -2;
 	startTask(zahvatC);
 	wait1Msec(75);
 
@@ -152,6 +148,8 @@ void take_yellow_ex()
 	povleft(stdPower, "cross");
 	Line_enc(75, stdPower, "");
 	Line_enc(2375, lineMaxPower, "");
+	bricksInRobot[0] = -1;
+	bricksInRobot[2] = -1;
 }
 
 void take_green_ex()
@@ -171,17 +169,13 @@ void take_green_ex()
 	move_enc(240, stdPower, 'f', "stop");
 	wait1Msec(50);
 	startTask(zahvatO);
-	bricksInRobot[1] = -1;
 	hapuga('m');
-	bricksInRobot[1] = -2;
 	startTask(hapugaC);
 	wait1Msec(75);
 	move_enc(50, stdPower, 'b', "stop");
 	move_enc(TURNAROUND, stdPower, 'l', "stop");
 	move_enc(250, stdPower, 'b', "stop");
-	bricksInRobot[3] = -1;
 	zahvat('m');
-	bricksInRobot[3] = -2;
 	startTask(zahvatC);
 	wait1Msec(75);
 
@@ -190,6 +184,8 @@ void take_green_ex()
 	povleft(stdPower, "cross");
 	Line_enc(75, stdPower, "");
 	Line_enc(925, lineMaxPower, "");
+	bricksInRobot[0] = -1;
+	bricksInRobot[2] = -1;
 }
 
 void take_blue_ex()
@@ -211,25 +207,23 @@ void take_blue_ex()
 	move_enc(280, stdPower, 'b', "stop");
 	wait1Msec(50);
 	startTask(hapugaO);
-	bricksInRobot[3] = -1;
 	zahvat('m');
-	bricksInRobot[3] = -2;
 	startTask(zahvatC);
 	wait1Msec(75);
 	move_enc(40, stdPower, 'f', "stop");
 	move_enc(TURNAROUND, stdPower, 'l', "stop");
 	move_enc(275, stdPower, 'f', "stop");
-	bricksInRobot[1] = -1;
 	hapuga('m');
-	bricksInRobot[1] = -2;
 	startTask(hapugaC);
 	wait1Msec(75);
 
 	move_enc(200, zonePower, 'b', "");
-	while(SensorValue[S1] < WHITE)
+	while(SensorValue[S1] < WHITE + 5)
 		moving(stdPower, 'b');
 	stopmotor();
 	povright(stdPower, "");
+	bricksInRobot[0] = -1;
+	bricksInRobot[2] = -1;
 }
 
 void approachToBlue()
@@ -254,12 +248,12 @@ void takeBlueZone()
 	startTask(zahvatC);
 	wait1Msec(750);
 
-	move_enc(TURN+3, stdPower, 'r', "stop");
+	move_enc(TURN, stdPower, 'r', "stop");
 	fwd_white(1, zonePower, "");
 	fwd_black(1, zonePower, "");
 
 	move_enc(272, zonePower, 'f', "stop");
-	move_enc(TURN+4, stdPower, 'r', "stop");
+	move_enc(TURN, stdPower, 'r', "stop");
 
 	bricksInRobot[1] = 0;
 	startTask(hapugaM);

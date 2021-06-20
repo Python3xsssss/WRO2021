@@ -43,35 +43,52 @@ void mainProgram()
 {
 	stapt();
 	take_ex_and_blue();
-	allocateAllBricks();
+	allocation(0);
+	writeDebugStreamLine("Time after first allocation: %d sec", time1[T1] / 1000);
+	approachToGreen();
+	takeGreenZone();
+	writeDebugStreamLine("Time after green zone: %d sec", time1[T1] / 1000);
+	takeYellowZone();
+	writeDebugStreamLine("Time after yellow zone: %d sec", time1[T1] / 1000);
+	allocation(1);
+	writeDebugStreamLine("Time after second allocation: %d", time1[T1] / 1000);
 	finish();
 }
 
 task main()
 {
 	/*!!NE ZABIVAY INIT!!*/
-	init();
-	zahvat('c');
-	hapuga('c');
+	//init();
+	//zahvat('c');
+	//hapuga('c');
+	wait1Msec(1000);
 	clearTimer(T1);
 	clearDebugStream();
-	move_enc(TURN, stdPower, 'l', "stop");
 	//mainProgram();
-	//location = 8;
-	//bricksInRobot[0] = 2;
-	//bricksInRobot[1] = 1;
-	//bricksInRobot[2] = 2;
-	//bricksInRobot[3] = 1;
-	//indDoms[0][0] = 0;
-	//indDoms[0][1] = 1;
-	//indDoms[1][0] = 0;
-	//indDoms[1][1] = 1;
-	//indDoms[2][0] = 2;
-	//indDoms[2][1] = -1;
-	//nInds[0] = 2;
-	//nInds[1] = 2;
-	//nInds[2] = 1;
-	//allocation(1);
+	indDoms[0][0] = 1;
+	indDoms[0][1] = 0;
+	indDoms[1][0] = 1;
+	indDoms[1][1] = 0;
+	indDoms[2][0] = 2;
+	indDoms[2][1] = -1;
+	bricksInRobot[0] = 2;
+	bricksInRobot[1] = 1;
+	bricksInRobot[2] = 2;
+	bricksInRobot[3] = 1;
+	nInds[1] = 2;
+	calculation(1);
+	for(short i = 0; i < 4; i++)
+	{
+		for(short j = 0; j < 4; j++)
+		{
+			writeDebugStream("%d ", finalRazvoz[i][j]);
+		}
+		writeDebugStream("\n");
+	}
+	writeDebugStreamLine("ourWay ");
+	for(short i = 0; i < 4; i++)
+		writeDebugStream("%d", ourWay[i]);
+	writeDebugStreamLine("");
 	writeDebugStreamLine("Time: %d seconds", time1[T1] / 1000);
 
 }

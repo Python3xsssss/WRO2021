@@ -71,10 +71,7 @@ void checkDom(short dom)
 	move_enc(TURN, stdPower, 'r', "stop");
 	indDoms[dom][0] = check_ind(FWD_PASS1, stdPower, dom);
 	indDoms[dom][1] = check_ind(FWD_PASS2, stdPower, dom);
-	move_enc(FWD_PASS2+200, zonePower, 'b', "");
-	while(SensorValue[S1] < GREY + 20)
-		moving(stdPower, 'b');
-	stopmotor();
+	move_enc(FWD_PASS1+FWD_PASS2, zonePower, 'b', "stop");
 }
 
 int assignment(int zone)
@@ -301,14 +298,11 @@ void calculation(short col)
 	ourWay[4] = -1;
 	if(nInds[col] < 2)
 	{
-		virtualBricks[1]=-2;
+		virtualBricks[3]=-2;
 	}
-	if(col==1)
+	if(col==1 && nInds[col+1] < 2)
 	{
-		if(nInds[col+1] < 2)
-		{
-			virtualBricks[2]=-2;
-		}
+		virtualBricks[2]=-2;
 	}
 
 	for(short i=0; i < 4; i++)
@@ -320,14 +314,18 @@ void calculation(short col)
 			{
 				ourWay[counter] = rightWay[col][i];
 				counter++;
+
 				for(i1 = 0; i1 < 4; i1++)
 				{
+					if(i == 3)
+						writeDebugStreamLine("virtualBricks: %d", virtualBricks[i1]);
 					if(indDoms[rightWay[col][i]][0] == virtualBricks[i1])
 					{
 						virtualBricks[i1]=-2;
 						break;
 					}
 				}
+
 				for(i2 = 0; i2 < 4; i2++)
 				{
 					if(indDoms[rightWay[col][i]][1] == virtualBricks[i2])
@@ -336,23 +334,26 @@ void calculation(short col)
 						break;
 					}
 				}
+				if(i == 3)
+					writeDebugStreamLine("i1: %d, i2: %d", i1, i2);
 				if(i1 < 4)
-				{
 					finalRazvoz[rightWay[col][i]][i1] = 1;
-					virtualBricks[i1] = -2;
-				}
+
 				if(i2 < 4)
-				{
 					finalRazvoz[rightWay[col][i]][i2] = 1;
-					virtualBricks[i2] = -2;
-				}
 			}
 		}
-		if(col==1)
+		else
 		{
-			if(nInds[col+1] == 1 && rightWay[col][i] == 3)
+			if(nInds[col] < 2)
 			{
-				finalRazvoz[rightWay[col][i]][2] = 1;
+				finalRazvoz[3][3] = 1;
+				ourWay[counter] = rightWay[col][i];
+				counter++;
+			}
+			else if(col == 1 && nInds[col+1] < 2)
+			{
+				finalRazvoz[3][2] = 1;
 				ourWay[counter] = rightWay[col][i];
 				counter++;
 			}

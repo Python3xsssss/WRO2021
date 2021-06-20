@@ -1,0 +1,37 @@
+ if (location == 1)
+  {
+   povright(stdPover,"cross");
+   lineCross(zonePower,""); 
+   move_enc(250,stdPower,'f',"stop");
+   move_enc(TURN,stdPower,'r',"stop");
+   fwdwhite(2,stdPower,"")
+   while (SensorValue[S2]>(WHITE-20))
+    moving('f',stdPower); 
+   stopmotor();
+  }
+ if (location)
+  {
+   povleftSpec(stdPower);
+   line1Cross(zonePower,"stop");
+   move_enc(50,stdPower,'f',"stop");
+   mot1_enc(ONEMOTORTURN,'c',stdPower,'b', "stop");
+  }
+ hapuga('g')
+ move_enc(100, stdPower,'f',"stop");
+ hapuga('c');
+ move_enc(100, stdPower,'b',"stop");
+ povright(stdPower,"");
+ lineCross(stdPower,"stop");
+ move_enc(TURN,stdPower,'l',"stop");
+ move_enc(100, stdPower,'f',"stop");
+ hapuga('g');
+ move_enc(100, stdPower,'b',"stop");
+ hapuga('c');
+ while(SensorValue[S2]>BLACK)
+  motor[motorB]=stdPover;
+ stopmotor();
+ mot1_enc(200,'c',stdPower,'f',"stop");
+ 
+ 
+ 
+ 

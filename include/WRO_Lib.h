@@ -3,15 +3,17 @@
 #ifndef TESTLIB_H
 #define TESTLIB_H
 
-#define TURN 248
-#define TURNAROUND 499
-#define ONEMOTORTURN 525
-#define CROSS_ENC 100
-#define SPEC_CROSS_L 48
-#define SPEC_CROSS_R 155
+#define TURN 250
+#define TURNAROUND 500
+#define ONEMOTORTURN 505
+#define CROSS_ENC 90
+#define POV_DIFF 3
+#define LINE_POV_DIFF 8
+#define SPEC_CROSS_L 35
+#define SPEC_CROSS_R 142
 #define ZAHVATG 124
 //#define HAPUGAG 64
-#define BEFORE_CROSS 90
+#define BEFORE_CROSS 100
 
 //#define LINETOLINE 200
 
@@ -20,7 +22,7 @@ short location, old_location; // location: 0-6 - T-crosses, 7 - accumulator, 8 -
 short sensors = 0;
 short indDoms[3][2] = {{-1,-1}, {-1,-1}, {-1,-1}}; // indDoms[0][0] - color index of first indicator in first dom, etc.
 short nInds[3] = {0, 0, 0}; // nInds[0] - num of blue indicators, etc.
-int encs[6] = {340, 760, 240, 930, 850, 250};
+int encs[6] = {400, 875, 250, 975, 875, 250};
 short bricksInRobot[4] = {-2, -2, -2, -2}; // bricksInRobot[0] - color index of bricks in hapuga, [1] - on hapuga, [2] - in zahvat, [3] - on zahvat
 short finalRazvoz[4][4] = {{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}};
 short ourWay[5] = {-1, -1, -1, -1, -1};
@@ -196,44 +198,6 @@ void moving(short speed, char dir)
 	}
 }
 
-void move_enc_old(short enc, short speed, char dir, const string ifStop)
-{
-	nMotorEncoder[motorB]=0;
-	if(dir=='f')
-	{
-		while(nMotorEncoder[motorB]<enc)
-		{
-			moving(speed, 'f');
-		}
-	}
-	if(dir=='b')
-	{
-		while(nMotorEncoder[motorB]>-enc)
-		{
-			moving(speed, 'b');
-		}
-	}
-	if(dir=='l')
-	{
-		while(nMotorEncoder[motorB]<enc)
-		{
-			moving(speed, 'l');
-		}
-	}
-	if(dir=='r')
-	{
-		while(nMotorEncoder[motorB]>-enc)
-		{
-			moving(speed, 'r');
-		}
-	}
-	if (ifStop == "stop" || ifStop == "Stop" || ifStop == "STOP")
-	{
-		stopmotor();
-	}
-
-}
-
 void moving_sync(short speed, char dir)
 {
 	short dirB; short dirC;
@@ -321,11 +285,10 @@ void razgon_sync(short speed, char dir, int nEnc)
 			if(abs(nMotorEncoder[motorB]) >= nEnc - decrease*30)
 				break;
 			moving_sync(i+14, dir);
-				//motor[motorB] = i+4-2
-				//motor[motorC] = -1*(i+4)
 		}
 		if(abs(nMotorEncoder[motorB]) >= nEnc - decrease*30)
 			break;
+		i = abs(nMotorEncoder[motorB]);
 	}
 	ifRazgon = 0.5;
 }
@@ -357,8 +320,6 @@ void tormoz(float speed, char dir)
 		dirB = 1;
 		dirC = 1;
 	}
-	//motor[motorB] = speed*dirB;
-	//motor[motorC] = speed*dirC;
 	for(short i = 5; i > 0; i-=1)
 	{
 		short nEncMotorB = abs(nMotorEncoder[motorB]);
@@ -366,7 +327,6 @@ void tormoz(float speed, char dir)
 		{
 			motor[motorB] = (4*i)*dirB;
 			motor[motorC] = (4*i)*dirC;
-			//moving_sync(speed*((float)(i))/((float)(5)), 'f');
 		}
 	}
 	motor[motorB] = 0;
@@ -385,12 +345,11 @@ void razgon(short speed, char dir, int nEnc)
 		{
 			if(average() >= nEnc - decrease*30)
 				break;
-			moving(i+6, dir);
-				//motor[motorB] = i+4-2
-				//motor[motorC] = -1*(i+4)
+			moving(i+3, dir);
 		}
 		if(average() >= nEnc - decrease*30)
 			break;
+		i = abs(nMotorEncoder[motorB]);
 	}
 }
 
@@ -414,16 +373,28 @@ void move_enc(int nEnc, short speed, char dir, const string ifStop)
 			tormoz(speed, dir);
 	}
 
-	else
+	else if (nEnc < 30)
 	{
-		if(motor[motorB] == 0 && motor[motorC] == 0)
-			razgon(speed, dir, nEnc);
-
 		while(average() < nEnc)
 			moving(speed, dir);
 
 		if(ifStop == "stop" || ifStop == "Stop" || ifStop == "STOP")
 			stopmotor();
+	}
+
+	else if(dir == 'r' || dir == 'l')
+	{
+		if((ifStop == "stop" || ifStop == "Stop" || ifStop == "STOP") /*&& dir != 'r' && dir != 'l'*/)
+			decrease = 1;
+
+		if(motor[motorB] == 0 && motor[motorC] == 0)
+			razgon(speed, dir, nEnc);
+
+		while(average() < nEnc - 30*decrease)
+			moving(speed, dir);
+
+		if(ifStop == "stop" || ifStop == "Stop" || ifStop == "STOP")
+			tormoz(speed, dir);
 	}
 
 	decrease = 0;
@@ -433,7 +404,7 @@ void povright(short speed, const string ifCross)
 {
 	if (ifCross == "cross" || ifCross == "Cross" || ifCross == "CROSS")
 	{
-		move_enc(CROSS_ENC, speed, 'f', "stop");
+		move_enc(CROSS_ENC + POV_DIFF, speed, 'f', "stop");
   }
 
 	move_enc(70, speed, 'r', "");
@@ -497,7 +468,7 @@ void LineRed(short speed, const string ifStop)
 
 void LineCross(short speed, const string ifStop)
 {
-	while(SensorValue[S1]>BLACK)
+	while(SensorValue[S1] > BLACK)
 	{
 		Line(speed);
 	}
@@ -509,7 +480,7 @@ void LineCross(short speed, const string ifStop)
 
 void Line1Cross(short speed, const string ifStop)
 {
-	while(SensorValue[S3]>BLACK)
+	while(SensorValue[S3] > BLACK)
 	{
 		Line1(speed);
 	}
@@ -546,7 +517,9 @@ void line1White(short speed, const string ifStop)
 void Line_enc(float enc2, short speed, const string ifStop)
 {
 	nMotorEncoder[motorB]=0;
-	while(nMotorEncoder[motorB]<enc2)
+	nMotorEncoder[motorC]=0;
+
+	while(average() < enc2)
 	{
 		Line(speed);
 	}
@@ -559,7 +532,9 @@ void Line_enc(float enc2, short speed, const string ifStop)
 void Line1_enc(float enc2, short speed, const string ifStop)
 {
 	nMotorEncoder[motorB]=0;
-	while(nMotorEncoder[motorB]<enc2)
+	nMotorEncoder[motorC]=0;
+
+	while(average() < enc2)
 	{
 		Line1(speed);
 	}
@@ -879,52 +854,10 @@ task zahvatM()
 	zahvat('m');
 }
 
-void old_crosses(short destination, const string ifStop)
-{
-	if(location == destination)
-	{
-		return;
-	}
-	if(destination % 2 == 0 && destination < location || destination % 2 != 0 && destination > location)
-	{
-		for(short i = 0; i < abs(destination - location)/2 + abs(destination - location) % 2; i++)
-		{
-			if(i != 0)
-			{
-				Line_enc(100, lineMaxPower, "");
-			}
-			lineWhite(lineMaxPower, "");
-			LineCross(lineMaxPower, "");
-		}
-	}
-	else
-	{
-		for(short i = 0; i < abs(destination - location)/2 + abs(destination - location) % 2; i++)
-		{
-			if(i != 0)
-			{
-				Line1_enc(100, lineMaxPower, "");
-			}
-			line1White(lineMaxPower, "");
-			Line1Cross(lineMaxPower, "");
-		}
-	}
-	if (ifStop == "stop" || ifStop == "Stop" || ifStop == "STOP")
-	{
-		stopmotor();
-	}
-	old_location = location;
-	location = destination;
-}
-
 void povrightSpec(short speed)
 {
 	move_enc(SPEC_CROSS_R, speed, 'f', "stop");
-	if((hap == 1 && bricksInRobot[1] == 1) || (hap == 2 && bricksInRobot[0] == 1))
-	{
-		stdPower = 18;
-	}
-	move_enc(100, speed, 'r', "");
+	move_enc(160, speed, 'r', "");
 	while (SensorValue[S1] > BLACK + 5)
 	{
 		moving(speed, 'r');
@@ -941,11 +874,7 @@ void povrightSpec(short speed)
 void povleftSpec(short speed)
 {
 	move_enc(SPEC_CROSS_L, speed, 'f', "stop");
-	if((hap == 1 && bricksInRobot[1] == 1) || (hap == 2 && bricksInRobot[0] == 1))
-	{
-		stdPower = 18;
-	}
-	move_enc(100, speed, 'l', "");
+	move_enc(160, speed, 'l', "");
 	while (SensorValue[S2] > BLACK + 5)
 	{
 		moving(speed, 'l');
@@ -1025,29 +954,21 @@ void crosses(short destination, const string ifStop)
 		else
 			Line1_enc(curr_enc, lineMaxPower, "");
 	}
-	LineCross(stdPower, "");
+	if(!sensors)
+		LineCross(stdPower, "");
+	else
+		Line1Cross(stdPower, "");
   location = destination;
+
 	if(ifStop == "stop" || ifStop == "STOP" || ifStop == "Stop" || ifStop == "s")
 		stopmotor();
 }
 
 void move_to(short destination, const string ifTurn1, const string ifTurn2)
 {
-	if(location == destination)
-	{
-		if(location == 4 && destination == 4)
-		{
-			povright(stdPower, "");
-			move_enc(CROSS_ENC, stdPower, 'b', "stop");
-		}
-		old_location = location;
-		location = destination;
-		return;
-	}
 	if(location == 8)
 	{
 		writeDebugStreamLine("%d", ourWay[0]);
-	//	povleft(stdPower,"stop");// destroy after write put in dom
 		if(ourWay[0] == 1)
 			return;
 		else
@@ -1059,28 +980,53 @@ void move_to(short destination, const string ifTurn1, const string ifTurn2)
 			location = 4;
 		}
 	}
+
+	if(location == destination)
+	{
+		if(location == 4 && destination == 4)
+		{
+			povright(stdPower, "");
+			move_enc(CROSS_ENC, stdPower, 'b', "stop");
+		}
+		old_location = location;
+		location = destination;
+		return;
+	}
+
 	if(location < 8)
 	{
-		if(ifTurn1 == "turn")// && location != 9)
+		if(ifTurn1 == "turn")
 		{
 			turning(destination);
+
 			if (location == 7) // accumulator
 			{
 				location = 4;
 			}
       writeDebugStreamLine("loc:%d",location);
       old_location = location;
+
 			crosses(destination, "");
 
 			if(ifTurn2  == "turn")
 			{
+				if(location != 0)
+				{
+					if(!sensors)
+						Line_enc(CROSS_ENC+LINE_POV_DIFF, stdPower, "stop");
+					else
+						Line1_enc(CROSS_ENC+LINE_POV_DIFF, stdPower, "stop");
+				}
+				else
+					move_enc(CROSS_ENC, stdPower, 'f', "stop");
+
 				if((old_location < destination && destination % 2 == 1) || (old_location > destination && destination % 2 == 0))
 				{
-					povright(stdPower, "cross");
+					povright(stdPower, "");
 				}
 				else
 				{
-					povleft(stdPower, "cross");
+					povleft(stdPower, "");
 				}
 			}
 			else

@@ -46,6 +46,7 @@ void read ()
 
 void init()
 {
+	initSensor(&colorSensor, S4);
 	read();
 	writeDebugStreamLine("Black %f, White %f, BIR %f, BIG %f, BIB %f, GIR %f, GIG %f, GIB %f, YIR %f, YIG %f, YIB %f", BLACK, WHITE, blueInd.red, blueInd.green, blueInd.blue, greenInd.red, greenInd.green, greenInd.blue, yellowInd.red, yellowInd.green, yellowInd.blue);
   GREY = (WHITE + BLACK)/2;
