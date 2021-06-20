@@ -3,14 +3,15 @@
 #ifndef TESTLIB_H
 #define TESTLIB_H
 
-#define TURN 250
+#define TURNL 248
+#define TURNR 252
 #define TURNAROUND 500
 #define ONEMOTORTURN 505
-#define CROSS_ENC 90
-#define POV_DIFF 3
+#define CROSS_ENC 92
+#define POV_DIFF 1
 #define LINE_POV_DIFF 8
 #define SPEC_CROSS_L 35
-#define SPEC_CROSS_R 142
+#define SPEC_CROSS_R 150
 #define ZAHVATG 124
 //#define HAPUGAG 64
 #define BEFORE_CROSS 100
@@ -36,7 +37,7 @@ short decrease = 0;
 float k1, k2;
 bool ifTormoz = false;
 
-int average()
+int average_enc()
 {
 	return (abs(nMotorEncoder[motorB]) + abs(nMotorEncoder[motorC])) / 2;
 }
@@ -121,7 +122,7 @@ void stopmotor()
 {
 	motor[motorB]=0;
 	motor[motorC]=0;
-	wait1Msec(120);
+	wait1Msec(500);
 	pauseCounter++;
 }
 
@@ -133,7 +134,7 @@ void Line1S1_enc(int nEnc, short speed, const string ifStop)
 		Line1S1(speed);
 
 	if(ifStop == "stop" || ifStop == "Stop" || ifStop == "STOP")
-			stopmotor();
+		stopmotor();
 }
 
 void Line1S1Cross(short speed, const string ifStop)
@@ -162,7 +163,7 @@ void Line1S3_enc(int nEnc, short speed, const string ifStop)
 		Line1S3(speed);
 
 	if(ifStop == "stop" || ifStop == "Stop" || ifStop == "STOP")
-			stopmotor();
+		stopmotor();
 }
 
 void Line1S3Cross(short speed, const string ifStop)
@@ -203,6 +204,7 @@ void moving_sync(short speed, char dir)
 	short dirB; short dirC;
 	static float kmot = 1, kold = 1;
 	static short nEncMotB = 0, nEncMotC = 0;
+
 	if(ifTormoz)
 	{
 		nEncMotB = 0;
@@ -212,30 +214,16 @@ void moving_sync(short speed, char dir)
 
 	if(motor[motorB] == 0 && motor[motorC] == 0)
 	{
-		//writeDebugStreamLine("kmot = %.1f, kold = %.1f", kmot, kold);
 		nEncMotB = abs(nMotorEncoder[motorB]);
 		nEncMotC = abs(nMotorEncoder[motorC]);
 	}
-
-	//if(ifRazgon)
-	//kmot = 0.73;
-
-	else if(abs(nMotorEncoder[motorB]) % 25 < 5 && abs(nMotorEncoder[motorB]) != 0 && abs(nMotorEncoder[motorC]) != 0)
+	else if(abs(nMotorEncoder[motorB]) > nEncMotB + 5 && abs(nMotorEncoder[motorC]) > nEncMotC + 5 && (abs(nMotorEncoder[motorB]) % 25 < 5 && abs(nMotorEncoder[motorB]) != 0 && abs(nMotorEncoder[motorC]) != 0))
 	{
-		//writeDebugStreamLine("nEncMotB: %.3f", (float)(abs(nMotorEncoder[motorB])));
-		//writeDebugStreamLine("nEncMotBOld: %.3f", (float)(nEncMotB));
-		//writeDebugStreamLine("nEncMotC: %.3f", (float)(abs(nMotorEncoder[motorC])));
-		//writeDebugStreamLine("nEncMotCOld: %.3f", (float)(nEncMotC));
 		kold = (float)kmot;
 		kmot = (float)(abs(nMotorEncoder[motorB]) - nEncMotB) / (float)(abs(nMotorEncoder[motorC]) - nEncMotC) * kold;
-		//writeDebugStreamLine("kmot = %.3f, kold = %.1f", kmot, kold);
-		//writeDebugStreamLine("chastnoe: %.3f", (float)(abs(nMotorEncoder[motorB]) - nEncMotB) / (float)(abs(nMotorEncoder[motorC]) - nEncMotC));
 		nEncMotB = abs(nMotorEncoder[motorB]);
 		nEncMotC = abs(nMotorEncoder[motorC]);
 	}
-
-	//if(kmot > 1)
-		//kmot = 1;
 
 	if(dir == 'f')
 	{
@@ -258,14 +246,8 @@ void moving_sync(short speed, char dir)
 		dirC = 1;
 	}
 
-	motor[motorB] = speed*dirB;
-	motor[motorC] = speed*dirC*kmot;
-
-	while((abs(nMotorEncoder[motorB]) == nEncMotB || abs(nMotorEncoder[motorC]) == nEncMotC) || abs(nMotorEncoder[motorB]) % 25 < 5)
-	{
-		motor[motorB] = speed*dirB;
-		motor[motorC] = speed*dirC*kmot;
-	}
+	motor[motorB] = speed * dirB;
+	motor[motorC] = speed * dirC * kmot;
 
 	if(abs(nMotorEncoder[motorB]) > 120 && ifRazgon == 0.5)
 		ifRazgon = 0;
@@ -274,21 +256,21 @@ void moving_sync(short speed, char dir)
 void razgon_sync(short speed, char dir, int nEnc)
 {
 	ifRazgon = 1;
-	short i = 0;
+	short enc = 0;
+	short cur_speed = 14;
 
 	while(abs(motor[motorC]) < speed && abs(motor[motorB]) < speed)
 	{
-		i++;
+		enc++;
 
-		while(abs(nMotorEncoder[motorB]) < i + i%40*3)
+		while(abs(nMotorEncoder[motorB]) < enc + enc / 40 * 3)
 		{
 			if(abs(nMotorEncoder[motorB]) >= nEnc - decrease*30)
-				break;
-			moving_sync(i+14, dir);
+				return;
+			moving_sync(cur_speed, dir);
 		}
-		if(abs(nMotorEncoder[motorB]) >= nEnc - decrease*30)
-			break;
-		i = abs(nMotorEncoder[motorB]);
+		cur_speed++;
+		enc = abs(nMotorEncoder[motorB]);
 	}
 	ifRazgon = 0.5;
 }
@@ -320,36 +302,39 @@ void tormoz(float speed, char dir)
 		dirB = 1;
 		dirC = 1;
 	}
-	for(short i = 5; i > 0; i-=1)
+
+	short nEncMotorB = abs(nMotorEncoder[motorB]);
+	while(abs(nMotorEncoder[motorB]) < nEncMotorB + 30)
 	{
-		short nEncMotorB = abs(nMotorEncoder[motorB]);
-		while(abs(nMotorEncoder[motorB]) < nEncMotorB + 6)
+		short diff = nEncMotorB + 30 - abs(nMotorEncoder[motorB]);
+		if (abs(motor[motorB]) >= diff)
 		{
-			motor[motorB] = (4*i)*dirB;
-			motor[motorC] = (4*i)*dirC;
+			motor[motorB] = ((diff > 4) ? diff : 4) * dirB;
+			motor[motorC] = ((diff > 4) ? diff : 4) * dirC;
 		}
 	}
+
 	motor[motorB] = 0;
 	motor[motorC] = 0;
 }
 
 void razgon(short speed, char dir, int nEnc)
 {
-	short i = 0;
+	short enc = 9;
+	short cur_speed = 10;
 
-	while(abs(motor[motorC]) < speed && abs(motor[motorB]) < speed)
+	while(cur_speed < speed)
 	{
-		i++;
+		enc++;
 
-		while(abs(nMotorEncoder[motorB]) < i + i%40*3)
+		while(abs(nMotorEncoder[motorB]) < enc + enc / 40 * 3)
 		{
-			if(average() >= nEnc - decrease*30)
-				break;
-			moving(i+3, dir);
+			if(average_enc() >= nEnc - decrease * 30)
+				return;
+			moving(cur_speed, dir);
 		}
-		if(average() >= nEnc - decrease*30)
-			break;
-		i = abs(nMotorEncoder[motorB]);
+		cur_speed++;
+		enc = abs(nMotorEncoder[motorB]);
 	}
 }
 
@@ -375,7 +360,7 @@ void move_enc(int nEnc, short speed, char dir, const string ifStop)
 
 	else if (nEnc < 30)
 	{
-		while(average() < nEnc)
+		while(average_enc() < nEnc)
 			moving(speed, dir);
 
 		if(ifStop == "stop" || ifStop == "Stop" || ifStop == "STOP")
@@ -390,7 +375,7 @@ void move_enc(int nEnc, short speed, char dir, const string ifStop)
 		if(motor[motorB] == 0 && motor[motorC] == 0)
 			razgon(speed, dir, nEnc);
 
-		while(average() < nEnc - 30*decrease)
+		while(average_enc() < nEnc - 30*decrease)
 			moving(speed, dir);
 
 		if(ifStop == "stop" || ifStop == "Stop" || ifStop == "STOP")
@@ -400,12 +385,32 @@ void move_enc(int nEnc, short speed, char dir, const string ifStop)
 	decrease = 0;
 }
 
+void turn90(short speed, char dir, const string ifStop)
+{
+	nMotorEncoder[motorB] = 0;
+	nMotorEncoder[motorC] = 0;
+
+	if((ifStop == "stop" || ifStop == "Stop" || ifStop == "STOP") /*&& dir != 'r' && dir != 'l'*/)
+		decrease = 1;
+	else
+		decrease = 0;
+
+	if(motor[motorB] == 0 && motor[motorC] == 0)
+		razgon(speed, dir, (TURNL + TURNR)/2);
+
+	while(nMotorEncoder[motorB] < TURNL - 30*decrease && nMotorEncoder[motorC] > -TURNR + 30*decrease)
+		moving(speed, dir);
+
+	if(ifStop == "stop" || ifStop == "Stop" || ifStop == "STOP")
+		tormoz(speed, dir);
+}
+
 void povright(short speed, const string ifCross)
 {
 	if (ifCross == "cross" || ifCross == "Cross" || ifCross == "CROSS")
 	{
 		move_enc(CROSS_ENC + POV_DIFF, speed, 'f', "stop");
-  }
+	}
 
 	move_enc(70, speed, 'r', "");
 	while (SensorValue[S2] < WHITE)
@@ -420,15 +425,15 @@ void povright(short speed, const string ifCross)
 	{
 		moving(speed, 'r');
 	}
-
-	stopmotor();
+	move_enc(26, speed, 'r', "stop");
+	//stopmotor();
 	stdPower = 25;
 	sensors = 0;
 }
 
 void povleft(short speed, const string ifCross)
 {
-if (ifCross == "cross" || ifCross == "Cross" || ifCross == "CROSS")
+	if (ifCross == "cross" || ifCross == "Cross" || ifCross == "CROSS")
 	{
 		move_enc(CROSS_ENC, speed, 'f', "stop");
 	}
@@ -445,8 +450,8 @@ if (ifCross == "cross" || ifCross == "Cross" || ifCross == "CROSS")
 	{
 		moving(speed, 'l');
 	}
-
-	stopmotor();
+	move_enc(26, speed, 'l', "stop");
+	//stopmotor();
 	stdPower = 25;
 	sensors = 0;
 }
@@ -519,7 +524,7 @@ void Line_enc(float enc2, short speed, const string ifStop)
 	nMotorEncoder[motorB]=0;
 	nMotorEncoder[motorC]=0;
 
-	while(average() < enc2)
+	while(average_enc() < enc2)
 	{
 		Line(speed);
 	}
@@ -534,7 +539,7 @@ void Line1_enc(float enc2, short speed, const string ifStop)
 	nMotorEncoder[motorB]=0;
 	nMotorEncoder[motorC]=0;
 
-	while(average() < enc2)
+	while(average_enc() < enc2)
 	{
 		Line1(speed);
 	}
@@ -641,7 +646,7 @@ int check_ind(int nEnc, short speed, short dom)
 				//if(blue_count == 2)
 				col = 0;
 			}
-			else if (cosine(greenInd, colorSensor) >= 0.94)
+			else if (cosine(greenInd, colorSensor) >= 0.96)
 			{
 				playSoundFile("Green");
 				writeDebugStreamLine("ret: %d, get: %d, bet: %d", greenInd.red, greenInd.green, greenInd.blue);
@@ -651,7 +656,7 @@ int check_ind(int nEnc, short speed, short dom)
 				//if(green_count == 2)
 				col = 1;
 			}
-			else if (cosine(yellowInd, colorSensor) >= 0.983)
+			else if (cosine(yellowInd, colorSensor) >= 0.98)
 			{
 				playSoundFile("Yellow");
 				writeDebugStreamLine("ret: %d, get: %d, bet: %d", yellowInd.red, yellowInd.green, yellowInd.blue);
@@ -958,7 +963,7 @@ void crosses(short destination, const string ifStop)
 		LineCross(stdPower, "");
 	else
 		Line1Cross(stdPower, "");
-  location = destination;
+	location = destination;
 
 	if(ifStop == "stop" || ifStop == "STOP" || ifStop == "Stop" || ifStop == "s")
 		stopmotor();
@@ -1003,8 +1008,8 @@ void move_to(short destination, const string ifTurn1, const string ifTurn2)
 			{
 				location = 4;
 			}
-      writeDebugStreamLine("loc:%d",location);
-      old_location = location;
+			writeDebugStreamLine("loc:%d",location);
+			old_location = location;
 
 			crosses(destination, "");
 

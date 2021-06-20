@@ -68,7 +68,7 @@ void put_akkum ()
 void checkDom(short dom)
 {
 	Line_enc(200,stdPower,"stop");
-	move_enc(TURN, stdPower, 'r', "stop");
+	turn90(stdPower, 'r', "stop");
 	indDoms[dom][0] = check_ind(FWD_PASS1, stdPower, dom);
 	indDoms[dom][1] = check_ind(FWD_PASS2, stdPower, dom);
 	move_enc(FWD_PASS1+FWD_PASS2, zonePower, 'b', "stop");
@@ -169,9 +169,15 @@ void put (short hapuga1, short hapuga2, short zahvat1, short zahvat2, short dom,
 		if (!ifBack)
 		{
 			if (dom == 0) // mb uzhe ne nado
-			 move_enc (TURNAROUND, stdPower,'r',"stop");
+			{
+			 	turn90(stdPower, 'r', "");
+				turn90(stdPower, 'r', "stop");
+			}
 			else
-				move_enc(TURNAROUND,stdPower,'l',"stop");
+			{
+				turn90(stdPower, 'l', "");
+				turn90(stdPower, 'l', "stop");
+			}
 		}
 		//if(!hapuga2)
 		//{
@@ -210,9 +216,15 @@ void put (short hapuga1, short hapuga2, short zahvat1, short zahvat2, short dom,
 	if (!zahvat1 && !zahvat2 && !ifBack)
 	{
 		if (dom == 0) // mb uzhe ne nado
-			move_enc(TURNAROUND,stdPower,'r',"stop");
+		{
+			turn90(stdPower, 'r', "");
+			turn90(stdPower, 'r', "stop");
+		}
 		else
-      move_enc(TURNAROUND,stdPower,'l',"stop");
+		{
+      turn90(stdPower, 'l', "");
+   	 	turn90(stdPower, 'l', "stop");
+   	}
 	}
 
 	startTask(hapugaC);

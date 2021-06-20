@@ -87,7 +87,7 @@ void checkDom1()
 
 	fwd_black(1, zonePower, "");
 	fwd_white(1, stdPower, "stop");
-	move_enc(TURN, stdPower, 'r', "stop");
+	turn90(stdPower, 'r', "stop");
 	startTask(hapugaO);
 }
 
@@ -128,7 +128,7 @@ bool check_green_ex()
 void take_yellow_ex()
 {
 	stopmotor();
-	move_enc(TURN, stdPower, 'l', "stop");
+	turn90(stdPower, 'l', "stop");
 
 	move_enc(245, stdPower, 'f', "stop");
 	startTask(zahvatO);
@@ -136,7 +136,8 @@ void take_yellow_ex()
 	startTask(hapugaC);
 	wait1Msec(75);
 	move_enc(70, stdPower, 'b', "stop");
-	move_enc(TURNAROUND-12, stdPower, 'l', "stop");
+	turn90(stdPower, 'r', "");
+	turn90(stdPower, 'r', "stop");
 	move_enc(260, stdPower, 'b', "stop");
 	wait10Msec(5);
 	zahvat('m');
@@ -173,7 +174,8 @@ void take_green_ex()
 	startTask(hapugaC);
 	wait1Msec(75);
 	move_enc(50, stdPower, 'b', "stop");
-	move_enc(TURNAROUND, stdPower, 'l', "stop");
+	turn90(stdPower, 'l', "");
+	turn90(stdPower, 'l', "stop");
 	move_enc(250, stdPower, 'b', "stop");
 	zahvat('m');
 	startTask(zahvatC);
@@ -211,17 +213,18 @@ void take_blue_ex()
 	startTask(zahvatC);
 	wait1Msec(75);
 	move_enc(40, stdPower, 'f', "stop");
-	move_enc(TURNAROUND, stdPower, 'l', "stop");
+	turn90(stdPower, 'l', "");
+	turn90(stdPower, 'l', "stop");
 	move_enc(275, stdPower, 'f', "stop");
 	hapuga('m');
 	startTask(hapugaC);
 	wait1Msec(75);
 
 	move_enc(200, zonePower, 'b', "");
-	while(SensorValue[S1] < WHITE + 5)
+	while(SensorValue[S3] > BLACK)
 		moving(stdPower, 'b');
 	stopmotor();
-	povright(stdPower, "");
+	povright(stdPower, "cross");
 	bricksInRobot[0] = -1;
 	bricksInRobot[2] = -1;
 }
@@ -239,7 +242,7 @@ void takeBlueZone()
 	Line1S1_enc(50, stdPower, "");
 	Line1S1_enc(150, zonePower, "");
 	Line1S1White(stdPower, "stop");
-	move_enc(TURN, stdPower, 'l', "stop");
+	turn90(stdPower, 'l', "stop");
 	bricksInRobot[3] = 0;
 	startTask(zahvatM);
 	move_enc(110, zonePower, 'f', "stop");
@@ -248,12 +251,12 @@ void takeBlueZone()
 	startTask(zahvatC);
 	wait1Msec(750);
 
-	move_enc(TURN, stdPower, 'r', "stop");
+	turn90(stdPower, 'r', "stop");
 	fwd_white(1, zonePower, "");
 	fwd_black(1, zonePower, "");
 
 	move_enc(272, zonePower, 'f', "stop");
-	move_enc(TURN, stdPower, 'r', "stop");
+	turn90(stdPower, 'r', "stop");
 
 	bricksInRobot[1] = 0;
 	startTask(hapugaM);
@@ -268,9 +271,10 @@ void takeBlueZone()
 	move_enc(550, lineMaxPower, 'b', "");
 	indDoms[1][1] = check_ind(BACK_PASS1, stdPower, 1);
 	indDoms[1][0] = check_ind(BACK_PASS2, stdPower, 1);
-	while(SensorValue[S1] < WHITE)
+	while(SensorValue[S1] > BLACK)
 		moving(stdPower, 'b');
 	stopmotor();
+	move_enc(CROSS_ENC + POV_DIFF, stdPower, 'f', "stop");
 	location = 8;
 }
 
@@ -308,7 +312,7 @@ void approachToGreen()
 		povright(stdPower,"cross");
 		LineCross(stdPower,"");
 		Line_enc(250,stdPower,"stop");
-		move_enc(TURN,stdPower,'r',"stop");
+		turn90(stdPower, 'r', "stop");
 		while (SensorValue[S2]>(WHITE-20))
 			moving('b',stdPower);
 		stopmotor();
@@ -332,7 +336,7 @@ void takeGreenZone()
 	povright(stdPower,"");
 	LineCross(stdPower,"stop");
 	Line_enc(250, stdPower,"stop");
-	move_enc(TURN,stdPower,'r',"stop");
+	turn90(stdPower, 'r', "stop");
 	move_enc(100, stdPower,'f',"stop");
 	zahvat('g');
 	move_enc(100, stdPower,'b',"stop");
@@ -356,7 +360,7 @@ void takeYellowZone()
 	Line_enc(465, lineMaxPower, "");
 	Line_enc(75, stdPower, "stop");
 
-	move_enc(TURN, stdPower, 'r', "stop");
+	turn90(stdPower, 'r', "stop");
 	move_enc(130, stdPower, 'f', "stop");
 	hapuga('m');
 	startTask(hapugaC);
@@ -369,7 +373,7 @@ void takeYellowZone()
 	Line_enc(600, lineMaxPower, "");
 	Line_enc(CROSS_ENC, stdPower, "stop");
 
-	move_enc(TURN-150, stdPower, 'r', "");
+	move_enc(TURNR-150, stdPower, 'r', "");
 	startTask(zahvatO);
 	move_enc(150, stdPower, 'r', "stop");
 	wait1Msec(700);
@@ -379,7 +383,7 @@ void takeYellowZone()
 	startTask(zahvatC);
 	wait1Msec(100);
 	move_enc(125, lineMaxPower, 'f', "stop");
-	move_enc(TURN, stdPower, 'l', "stop");
+	turn90(stdPower, 'l', "stop");
 	move_enc(400, lineMaxPower, 'f', "");
 	fwd_black(1, zonePower, "");
 	move_enc(CROSS_ENC, stdPower, 'f', "stop");

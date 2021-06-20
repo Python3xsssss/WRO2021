@@ -58,37 +58,13 @@ void mainProgram()
 task main()
 {
 	/*!!NE ZABIVAY INIT!!*/
-	//init();
+	init();
 	//zahvat('c');
 	//hapuga('c');
 	wait1Msec(1000);
 	clearTimer(T1);
 	clearDebugStream();
-	//mainProgram();
-	indDoms[0][0] = 1;
-	indDoms[0][1] = 0;
-	indDoms[1][0] = 1;
-	indDoms[1][1] = 0;
-	indDoms[2][0] = 2;
-	indDoms[2][1] = -1;
-	bricksInRobot[0] = 2;
-	bricksInRobot[1] = 1;
-	bricksInRobot[2] = 2;
-	bricksInRobot[3] = 1;
-	nInds[1] = 2;
-	calculation(1);
-	for(short i = 0; i < 4; i++)
-	{
-		for(short j = 0; j < 4; j++)
-		{
-			writeDebugStream("%d ", finalRazvoz[i][j]);
-		}
-		writeDebugStream("\n");
-	}
-	writeDebugStreamLine("ourWay ");
-	for(short i = 0; i < 4; i++)
-		writeDebugStream("%d", ourWay[i]);
-	writeDebugStreamLine("");
+	mainProgram();
 	writeDebugStreamLine("Time: %d seconds", time1[T1] / 1000);
 
 }
