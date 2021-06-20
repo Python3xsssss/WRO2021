@@ -329,23 +329,26 @@ void approachToGreen()
 void takeGreenZone()
 {
 	hapuga('g');
-	move_enc(60, stdPower,'f',"stop");
-	motor[motorA] = -25;
-	move_enc(60, stdPower,'b',"stop");
+	wait1Msec(500);
+	move_enc(90, stdPower,'f',"stop");
+	motor[motorA] = -15;
+	wait10Msec(30);
+	move_enc(50, stdPower,'b',"stop");
 	motor[motorA] = 0;
 	povright(stdPower,"");
-	LineCross(stdPower,"stop");
-	Line_enc(250, stdPower,"stop");
+	//LineCross(stdPower,"stop");
+	Line_enc(320, stdPower,"stop");
 	turn90(stdPower, 'r', "stop");
 	move_enc(100, stdPower,'f',"stop");
 	zahvat('g');
+	wait1Msec(500);
 	move_enc(100, stdPower,'b',"stop");
 	motor[motorD] = -25;
 	while(SensorValue[S2]>BLACK)
 		motor[motorB]=stdPower;
 	stopmotor();
 	motor[motorD] = 0;
-	mot1_enc(200,'c',stdPower,'f',"stop");
+	mot1_enc(350,'c',stdPower,'f',"stop");
 	bricksInRobot[1] = 1; bricksInRobot[3] = 1;
 }
 

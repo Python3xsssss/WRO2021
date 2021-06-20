@@ -12,8 +12,8 @@
 #define LINE_POV_DIFF 8
 #define SPEC_CROSS_L 35
 #define SPEC_CROSS_R 150
-#define ZAHVATG 124
-//#define HAPUGAG 64
+#define ZAHVATG 95
+#define HAPUGAG 107
 #define BEFORE_CROSS 100
 
 //#define LINETOLINE 200
@@ -519,12 +519,49 @@ void line1White(short speed, const string ifStop)
 	}
 }
 
-void Line_enc(float enc2, short speed, const string ifStop)
+void razgon_line(short speed, int nEnc)
+{
+	short cur_speed = 10;
+	short enc = nMotorEncoder[motorB];
+	while(cur_speed < speed)
+	{
+		if(nEnc >= average_enc())
+			return;
+
+		while(nMotorEncoder[motorB] < enc + 2)
+			Line(cur_speed);
+
+		enc = nMotorEncoder[motorB];
+		cur_speed++;
+	}
+}
+
+void razgon_line1(short speed, int nEnc)
+{
+	short cur_speed = 10;
+	short enc = nMotorEncoder[motorB];
+	while(cur_speed < speed)
+	{
+		if(nEnc >= average_enc())
+			return;
+
+		while(nMotorEncoder[motorB] < enc + 2)
+			Line1(cur_speed);
+
+		enc = nMotorEncoder[motorB];
+		cur_speed++;
+	}
+}
+
+void Line_enc(int nEnc, short speed, const string ifStop)
 {
 	nMotorEncoder[motorB]=0;
 	nMotorEncoder[motorC]=0;
 
-	while(average_enc() < enc2)
+	if(motor[motorB] == 0 && motor[motorC] == 0)
+		razgon_line(speed, nEnc);
+
+	while(average_enc() < nEnc)
 	{
 		Line(speed);
 	}
@@ -534,12 +571,15 @@ void Line_enc(float enc2, short speed, const string ifStop)
 	}
 }
 
-void Line1_enc(float enc2, short speed, const string ifStop)
+void Line1_enc(float nEnc, short speed, const string ifStop)
 {
 	nMotorEncoder[motorB]=0;
 	nMotorEncoder[motorC]=0;
 
-	while(average_enc() < enc2)
+	if(motor[motorB] == 0 && motor[motorC] == 0)
+		razgon_line1(speed, nEnc);
+
+	while(average_enc() < nEnc)
 	{
 		Line1(speed);
 	}
@@ -764,9 +804,9 @@ void hapuga(char dir)
 
 	if(dir == 'g')
 	{
-		while(nMotorEncoder[motorA] < ZAHVATG)
+		while(nMotorEncoder[motorA] < HAPUGAG)
 		{
-			motor[motorA]=15;
+			motor[motorA]=12;
 		}
 	}
 	motor[motorA]=0;
@@ -823,7 +863,7 @@ void zahvat(char dir)
 	{
 		while(nMotorEncoder[motorD] < ZAHVATG)
 		{
-			motor[motorD]=15;
+			motor[motorD]=10;
 		}
 	}
 	motor[motorD]=0;
@@ -959,10 +999,12 @@ void crosses(short destination, const string ifStop)
 		else
 			Line1_enc(curr_enc, lineMaxPower, "");
 	}
+
 	if(!sensors)
-		LineCross(stdPower, "");
+		Line1S3Cross(stdPower, "");
 	else
-		Line1Cross(stdPower, "");
+		Line1S1Cross(stdPower, "");
+
 	location = destination;
 
 	if(ifStop == "stop" || ifStop == "STOP" || ifStop == "Stop" || ifStop == "s")

@@ -59,12 +59,13 @@ task main()
 {
 	/*!!NE ZABIVAY INIT!!*/
 	init();
-	//zahvat('c');
-	//hapuga('c');
-	wait1Msec(1000);
+	zahvat('c');
+	hapuga('c');
+	//wait1Msec(1000);
 	clearTimer(T1);
-	clearDebugStream();
-	mainProgram();
-	writeDebugStreamLine("Time: %d seconds", time1[T1] / 1000);
+	//clearDebugStream();
+	//mainProgram();
+  takeGreenZone();
+  writeDebugStreamLine("Time: %d seconds", time1[T1] / 1000);
 
 }
