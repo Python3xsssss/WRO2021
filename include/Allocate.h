@@ -3,8 +3,8 @@
 #ifndef ALLOCATE_H
 #define ALLOCATE_H
 
-#define FWD_PASS1 325
-#define FWD_PASS2 150
+#define FWD_PASS1 288
+#define FWD_PASS2 175
 
 short rightWay[2][5] = {{1, 2, 3, 0, -1}, {1, 2, 3, 0, -1}};
 short virtualBricks[4];
@@ -13,8 +13,10 @@ short akkum_gb = 0;
 
 bool zahvats_empty()
 {
+	writeDebugStreamLine("bricksInRobot:");
 	for (int i = 0; i < 4; i++)
 	{
+		writeDebugStream(" %d", bricksInRobot[i]);
 		if (bricksInRobot[i] > -2)
 		{
 			return false;
@@ -58,7 +60,7 @@ void put_akkum ()
 	if (bricksInRobot[3] != -2 && nInds[bricksInRobot[3]] != 2)
 		akkumGB();
 
-	if (bricksInRobot[2] == -1 || nInds[bricksInRobot[2]] != 2)
+	if (bricksInRobot[2] == -1 || (bricksInRobot[3] != -2 && nInds[bricksInRobot[2]] != 2))
 		akkum_std();
 
 	akkum_gb = 0;
@@ -67,10 +69,12 @@ void put_akkum ()
 
 void checkDom(short dom)
 {
-	Line_enc(200,stdPower,"stop");
+	Line_enc(212,stdPower,"stop");
 	turn90(stdPower, 'r', "stop");
 	indDoms[dom][0] = check_ind(FWD_PASS1, stdPower, dom);
+	stopmotor();
 	indDoms[dom][1] = check_ind(FWD_PASS2, stdPower, dom);
+	stopmotor();
 	move_enc(FWD_PASS1+FWD_PASS2, zonePower, 'b', "stop");
 }
 
@@ -157,9 +161,9 @@ void put (short hapuga1, short hapuga2, short zahvat1, short zahvat2, short dom,
 	{
 		startTask(hapugaM);
 		nMotorEncoder[motorB]=0;
-		Line_enc(160, stdPower, "stop");
-		wait1Msec(250);
-		move_enc(160, stdPower,'b',"stop");
+		Line_enc(30, stdPower, "stop");
+		wait1Msec(400);
+		move_enc(30, stdPower,'b',"stop");
 		bricksInRobot[1] = -2;
 	}
 	if (zahvat1)
@@ -279,23 +283,23 @@ void putInDom(short hapuga1, short hapuga2, short zahvat1, short zahvat2, short 
 			hapuga1 = finalRazvoz[dom][0]; hapuga2 = finalRazvoz[dom][1];
 			zahvat1 = finalRazvoz[dom][2]; zahvat2 = finalRazvoz[dom][3];
 		}
+
 		if (hapuga1)
-		{
 			startTask(hapugaO);
-		}
+
 		Line_enc(180, stdPower, "");
 	}
 
 //sama vigruzka
   put (hapuga1, hapuga2, zahvat1, zahvat2, dom, ifBack);
 
-	if (dom == 1)
-	{
-		Line_enc(425, zonePower, "");
-	}
-	LineCross(stdPower, "stop");
-	for (int i = 0; i < 4; i++)
+  for (int i = 0; i < 4; i++)
 		finalRazvoz[dom][i] = 0;
+
+	if (dom == 1)
+		Line_enc(375, lineMaxPower, "");
+
+	LineCross(stdPower, "");
 }
 
 void calculation(short col)
@@ -378,9 +382,14 @@ void allocation(short part)
 {
 	if(part == 1)
 		calculation(part);
+
 	else
+	{
 		for(short i = 0; i < 4; i++)
+		{
 			ourWay[i] = rightWay[part][i];
+		}
+	}
 
 	writeDebugStreamLine("%d", ourWay[0]);
 	cur_zone = -1;

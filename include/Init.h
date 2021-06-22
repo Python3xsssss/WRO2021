@@ -6,7 +6,7 @@
 #include "hitechnic-colour-v2.h"
 
 #define WHITE 57
-#define BLACK 15
+#define BLACK 13
 
 tHTCS2 colorSensor;
 char * fileInd = "Indicators";
@@ -49,7 +49,7 @@ void init()
 	initSensor(&colorSensor, S4);
 	read();
 	writeDebugStreamLine("Black %f, White %f, BIR %f, BIG %f, BIB %f, GIR %f, GIG %f, GIB %f, YIR %f, YIG %f, YIB %f", BLACK, WHITE, blueInd.red, blueInd.green, blueInd.blue, greenInd.red, greenInd.green, greenInd.blue, yellowInd.red, yellowInd.green, yellowInd.blue);
-  GREY = (WHITE + BLACK)/2;
+  GREY = /*(WHITE + BLACK)/2*/ 40;
 //	initSensor(&colorSensor, S4);
 }
 

@@ -12,9 +12,10 @@
 void stapt()
 {
 	move_enc(50, stdPower, 'f', "");
-	move_enc(150, zonePower, 'f', "");
+	move_enc(100, zonePower, 'f', "");
 	startTask(hapugaC);
-	Line1Cross(lineMaxPower, "");
+	Line1_enc(300, lineMaxPower, "");
+	Line1S1Cross(stdPower, 'r', "stop");
 }
 
 void finish()
@@ -26,8 +27,6 @@ void finish()
 	startTask(hapugaO);
 	Line_enc(350, zonePower, "");
 	LineCross(stdPower, "stop");
-	mot1_enc(50, 'b', stdPower, 'f', "stop");
-	mot1_enc(50, 'c', stdPower, 'f', "stop");
 	moving(lineMaxPower, 'f');
 	wait10Msec(100);
 	stopmotor();
@@ -43,6 +42,15 @@ void mainProgram()
 {
 	stapt();
 	take_ex_and_blue();
+	//indDoms[0][0] = 1;
+	//indDoms[0][1] = 0;
+	//indDoms[1][0] = 1;
+	//indDoms[1][1] = 0;
+	//indDoms[2][0] = 2;
+	//indDoms[2][1] = -1;
+	//nInds[0] = 2;
+	//nInds[1] = 2;
+	//nInds[2] = 1;
 	allocation(0);
 	writeDebugStreamLine("Time after first allocation: %d sec", time1[T1] / 1000);
 	approachToGreen();
@@ -59,13 +67,11 @@ task main()
 {
 	/*!!NE ZABIVAY INIT!!*/
 	init();
-	zahvat('c');
-	hapuga('c');
-	//wait1Msec(1000);
+	//startTask(hapugaC);
+	//startTask(zahvatC);
+	wait1Msec(1500);
 	clearTimer(T1);
-	//clearDebugStream();
-	//mainProgram();
-  takeGreenZone();
+	clearDebugStream();
+	mainProgram();
   writeDebugStreamLine("Time: %d seconds", time1[T1] / 1000);
-
 }

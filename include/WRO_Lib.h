@@ -3,18 +3,18 @@
 #ifndef TESTLIB_H
 #define TESTLIB_H
 
-#define TURNL 248
+#define TURNL 254
 #define TURNR 252
 #define TURNAROUND 500
 #define ONEMOTORTURN 505
-#define CROSS_ENC 92
-#define POV_DIFF 1
+#define CROSS_ENC 74
+#define POV_DIFF 9
 #define LINE_POV_DIFF 8
 #define SPEC_CROSS_L 35
-#define SPEC_CROSS_R 150
+#define SPEC_CROSS_R 250
 #define ZAHVATG 95
-#define HAPUGAG 107
-#define BEFORE_CROSS 100
+#define HAPUGAG 95
+#define BEFORE_CROSS 225
 
 //#define LINETOLINE 200
 
@@ -23,7 +23,7 @@ short location, old_location; // location: 0-6 - T-crosses, 7 - accumulator, 8 -
 short sensors = 0;
 short indDoms[3][2] = {{-1,-1}, {-1,-1}, {-1,-1}}; // indDoms[0][0] - color index of first indicator in first dom, etc.
 short nInds[3] = {0, 0, 0}; // nInds[0] - num of blue indicators, etc.
-int encs[6] = {400, 875, 250, 975, 875, 250};
+int encs[6] = {410, 860, 270, 1000, 900, 270};
 short bricksInRobot[4] = {-2, -2, -2, -2}; // bricksInRobot[0] - color index of bricks in hapuga, [1] - on hapuga, [2] - in zahvat, [3] - on zahvat
 short finalRazvoz[4][4] = {{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}};
 short ourWay[5] = {-1, -1, -1, -1, -1};
@@ -60,7 +60,7 @@ void Line(short speed)
 		k2=13;
 	}
 	sensors = 0;
-	static short eold, e, es, u;
+	static float eold, e, es, u;
 	es = SensorValue[S2] - SensorValue[S3];
 	e = SensorValue[S2] - SensorValue[S3]+es;
 	u=k1*es+k2*(e-eold);
@@ -87,7 +87,7 @@ void Line1(short speed)
 		k2=13;
 	}
 	sensors = 1;
-	static short eold, e, es, u;
+	static float eold, e, es, u;
 	es=SensorValue[S1]-SensorValue[S2];
 	e=SensorValue[S1]-SensorValue[S2]+es;
 	u=k1*es+k2*(e-eold);
@@ -96,26 +96,40 @@ void Line1(short speed)
 	motor[motorC]=(-speed + u)*1.03;
 }
 
-void Line1S1(short speed)
+void Line1S1(short speed, char side)
 {
 	k1 = 0.22; k2 = 11;
-	static short eold, e, u;
-	e=GREY-SensorValue[S1];
+	static float eold, e, u;
+	e = (side == 'l') ? GREY-SensorValue[S1] : SensorValue[S1]-GREY;
 	u=k1*e+k2*(e-eold);
 	eold=e;
-	motor[motorB]=(speed + u);
-	motor[motorC]=(-speed + u);
+	float kmotB = 0.97, kmotC = 1.03;
+	if(side == 'l')
+	{
+		kmotB = 0.95;
+		kmotC = 1.05;
+	}
+
+	motor[motorB]=(speed + u)*kmotB;
+	motor[motorC]=(-speed + u)*kmotC;
 }
 
-void Line1S3(short speed)
+void Line1S3(short speed, char side)
 {
 	k1 = 0.2; k2 = 10;
-	static short eold, e, u;
-	e=SensorValue[S3]-GREY;
+	static float eold, e, u;
+	e = (side == 'r') ? SensorValue[S3]-GREY : GREY-SensorValue[S1];
 	u=k1*e+k2*(e-eold);
 	eold=e;
-	motor[motorB]=(speed + u)*1.03;
-	motor[motorC]=(-speed + u)*0.97;
+	float kmotB = 1.03, kmotC = 0.97;
+	if(side == 'l')
+	{
+		kmotB = 1.01;
+		kmotC = 0.99;
+	}
+
+	motor[motorB]=(speed + u)*kmotB;
+	motor[motorC]=(-speed + u)*kmotC;
 }
 
 void stopmotor()
@@ -126,50 +140,50 @@ void stopmotor()
 	pauseCounter++;
 }
 
-void Line1S1_enc(int nEnc, short speed, const string ifStop)
+void Line1S1_enc(int nEnc, short speed, char side, const string ifStop)
 {
 	nMotorEncoder[motorB]=0;
 
 	while(nMotorEncoder[motorB] < nEnc)
-		Line1S1(speed);
+		Line1S1(speed, side);
 
 	if(ifStop == "stop" || ifStop == "Stop" || ifStop == "STOP")
 		stopmotor();
 }
 
-void Line1S1Cross(short speed, const string ifStop)
+void Line1S1Cross(short speed, char side, const string ifStop)
 {
 	while(SensorValue[S3] > BLACK)
-		Line1S1(speed);
+		Line1S1(speed, side);
 
 	if(ifStop == "stop" || ifStop == "Stop" || ifStop == "STOP")
 		stopmotor();
 }
 
-void Line1S1White(short speed, const string ifStop)
+void Line1S1White(short speed, char side, const string ifStop)
 {
 	while(SensorValue[S3] < WHITE)
-		Line1S1(speed);
+		Line1S1(speed, side);
 
 	if(ifStop == "stop" || ifStop == "Stop" || ifStop == "STOP")
 		stopmotor();
 }
 
-void Line1S3_enc(int nEnc, short speed, const string ifStop)
+void Line1S3_enc(int nEnc, short speed, char side, const string ifStop)
 {
 	nMotorEncoder[motorB]=0;
 
 	while(nMotorEncoder[motorB] < nEnc)
-		Line1S3(speed);
+		Line1S3(speed, side);
 
 	if(ifStop == "stop" || ifStop == "Stop" || ifStop == "STOP")
 		stopmotor();
 }
 
-void Line1S3Cross(short speed, const string ifStop)
+void Line1S3Cross(short speed, char side, const string ifStop)
 {
 	while(SensorValue[S1] > BLACK)
-		Line1S3(speed);
+		Line1S3(speed, side);
 
 	if(ifStop == "stop" || ifStop == "Stop" || ifStop == "STOP")
 		stopmotor();
@@ -658,25 +672,23 @@ float cosine (Indicator ind, tHTCS2 sensor)
 int check_ind(int nEnc, short speed, short dom)
 {
 	char dir;
-	if(dom == 0)
-		dir = 'r';
-	else if(dom == 1)
-		dir = 'b';
-	else if(dom == 2)
+	if(dom == 2)
 		dir = 'f';
+	else
+		dir = 'b';
 
 	readSensor(&colorSensor);
 	nMotorEncoder[motorB] = 0;
 	short col = -1;
 
-	while(abs(nMotorEncoder[motorB]) < nEnc)
+	while(abs(nMotorEncoder[motorB]) < nEnc-20)
 	{
 		moving(speed, dir);
 		readSensor(&colorSensor);
-		if(col == -1 && (colorSensor.red + colorSensor.green + colorSensor.blue) > 65)
+		if(col == -1 && (colorSensor.red > 65 || colorSensor.green > 55 || colorSensor.blue > 55))
 		{
 			//short blue_count = 0, green_count = 0, yellow_count = 0;
-			if (cosine(blueInd, colorSensor) >= 0.9)
+			if (cosine(blueInd, colorSensor) > 0.95)
 			{
 				playSoundFile("Blue");
 				writeDebugStreamLine("ret: %d, get: %d, bet: %d", blueInd.red, blueInd.green, blueInd.blue);
@@ -686,7 +698,7 @@ int check_ind(int nEnc, short speed, short dom)
 				//if(blue_count == 2)
 				col = 0;
 			}
-			else if (cosine(greenInd, colorSensor) >= 0.96)
+			else if (cosine(greenInd, colorSensor) > 0.912)
 			{
 				playSoundFile("Green");
 				writeDebugStreamLine("ret: %d, get: %d, bet: %d", greenInd.red, greenInd.green, greenInd.blue);
@@ -696,7 +708,7 @@ int check_ind(int nEnc, short speed, short dom)
 				//if(green_count == 2)
 				col = 1;
 			}
-			else if (cosine(yellowInd, colorSensor) >= 0.98)
+			else if (cosine(yellowInd, colorSensor) > 0.95)
 			{
 				playSoundFile("Yellow");
 				writeDebugStreamLine("ret: %d, get: %d, bet: %d", yellowInd.red, yellowInd.green, yellowInd.blue);
@@ -708,6 +720,13 @@ int check_ind(int nEnc, short speed, short dom)
 			}
 		}
 	}
+	if(col >= 0)
+		nInds[col]++;
+
+	while(abs(nMotorEncoder[motorB]) < nEnc)
+		moving(speed, dir);
+	stopmotor();
+
 	return col;
 }
 
@@ -911,8 +930,7 @@ void povrightSpec(short speed)
 	{
 		moving(speed, 'r');
 	}
-	stdPower = 25;
-	stopmotor();
+	move_enc(26, speed, 'r', "stop");
 	sensors = 1;
 }
 
@@ -928,8 +946,7 @@ void povleftSpec(short speed)
 	{
 		moving(speed, 'l');
 	}
-	stdPower = 25;
-	stopmotor();
+	move_enc(25, speed, 'l', "stop");
 	sensors = 1;
 }
 
@@ -1001,9 +1018,15 @@ void crosses(short destination, const string ifStop)
 	}
 
 	if(!sensors)
-		Line1S3Cross(stdPower, "");
+	{
+		Line_enc(100, stdPower, "");
+		fwd_black(1, stdPower, "");
+	}
 	else
-		Line1S1Cross(stdPower, "");
+	{
+		Line1_enc(100, stdPower, "");
+		fwd_black(3, stdPower, "");
+	}
 
 	location = destination;
 
@@ -1057,23 +1080,13 @@ void move_to(short destination, const string ifTurn1, const string ifTurn2)
 
 			if(ifTurn2  == "turn")
 			{
-				if(location != 0)
-				{
-					if(!sensors)
-						Line_enc(CROSS_ENC+LINE_POV_DIFF, stdPower, "stop");
-					else
-						Line1_enc(CROSS_ENC+LINE_POV_DIFF, stdPower, "stop");
-				}
-				else
-					move_enc(CROSS_ENC, stdPower, 'f', "stop");
-
 				if((old_location < destination && destination % 2 == 1) || (old_location > destination && destination % 2 == 0))
 				{
-					povright(stdPower, "");
+					povright(stdPower, "cross");
 				}
 				else
 				{
-					povleft(stdPower, "");
+					povleft(stdPower, "cross");
 				}
 			}
 			else

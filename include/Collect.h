@@ -3,25 +3,25 @@
 #ifndef CHECK_H
 #define CHECK_H
 
-#define RIGHT_PASS1 238
-#define RIGHT_PASS2 250
-#define BACK_PASS1 240
-#define BACK_PASS2 140
+#define DOM1PASS1 92
+#define DOM1PASS2 60
+#define BACK_PASS1 285
+#define BACK_PASS2 220
 
 
 task checkY()
 {
-	Line1S3(stdPower);
+	Line1S3(stdPower, 'r');
 	readSensor(&colorSensor);
 	short j = 0;
 	while(j < 3 || nMotorEncoder[motorB] < 300)
 	{
-		Line1S3(stdPower);
+		Line1S3(stdPower, 'r');
 		readSensor(&colorSensor);
 		writeDebugStreamLine("R: %d, G: %d", colorSensor.red, colorSensor.green);
 		while(colorSensor.red < 6 && colorSensor.green < 6)
 		{
-			Line1S3(stdPower);
+			Line1S3(stdPower, 'r');
 			j = 0;
 			readSensor(&colorSensor);
 			writeDebugStreamLine("R: %d, G: %d", colorSensor.red, colorSensor.green);
@@ -41,17 +41,17 @@ task checkY()
 
 task checkG()
 {
-	Line1S3(stdPower);
+	Line1S3(stdPower, 'r');
 	readSensor(&colorSensor);
 	short j = 0;
 	while(j < 3 || nMotorEncoder[motorB] < 600)
 	{
-		Line1S3(stdPower);
+		Line1S3(stdPower, 'r');
 		readSensor(&colorSensor);
 		writeDebugStreamLine("G: %d, B: %d", colorSensor.green, colorSensor.blue);
 		while(colorSensor.green < 10 && colorSensor.blue < 10)
 		{
-			Line1S3(stdPower);
+			Line1S3(stdPower, 'r');
 			j = 0;
 			readSensor(&colorSensor);
 			writeDebugStreamLine("G: %d, B: %d", colorSensor.green, colorSensor.blue);
@@ -80,26 +80,31 @@ variable = (smth == true) ? a : b;
 
 void checkDom1()
 {
-	move_enc(282, stdPower, 'f', "stop");
-	indDoms[0][0] = check_ind(RIGHT_PASS1, 20, 0);
-	indDoms[0][1] = check_ind(RIGHT_PASS2, stdPower, 0);
-	move_enc(TURNAROUND-RIGHT_PASS1-RIGHT_PASS2, stdPower, 'r', "stop");
-
+	move_enc(290, stdPower, 'f', "stop");
+	turn90(stdPower, 'r', "stop");
+	indDoms[0][0] = check_ind(DOM1PASS1, 20, 0);
+	indDoms[0][1] = check_ind(DOM1PASS2, stdPower, 0);
+	stopmotor();
+	turn90(stdPower, 'r', "stop");
 	fwd_black(1, zonePower, "");
 	fwd_white(1, stdPower, "stop");
-	turn90(stdPower, 'r', "stop");
+	move_enc(TURNR-100, zonePower, 'r', "");
+	while(SensorValue[S3] > BLACK)
+		moving(stdPower, 'r');
+	move_enc(77, stdPower, 'r', "stop");
+	wait10Msec(150);
 	startTask(hapugaO);
 }
 
 bool check_yellow_ex()
 {
 	exColor = 0;
-	Line1S3Cross(stdPower, "stop");
+	Line1S3Cross(stdPower, 'r', "stop");
 	startTask(checkY);
 	nMotorEncoder[motorB] = 0;
 	while(nMotorEncoder[motorB] < 333)
 	{
-		Line1S3(stdPower);
+		Line1S3(zonePower, 'r');
 	}
 
 	if(exColor == 2)
@@ -110,13 +115,13 @@ bool check_yellow_ex()
 
 bool check_green_ex()
 {
-	Line1S3_enc(125, stdPower, "");
-	Line1S3Cross(lineMaxPower, "");
+	Line1S3_enc(125, stdPower, 'r', "");
+	Line1S3Cross(zonePower, 'r', "");
 	startTask(checkG);
 	nMotorEncoder[motorB] = 0;
 	while(nMotorEncoder[motorB] < 762)
 	{
-		Line1S3(stdPower);
+		Line1S3(stdPower, 'r');
 	}
 
 	if(exColor == 1)
@@ -192,8 +197,8 @@ void take_green_ex()
 
 void take_blue_ex()
 {
-	Line1S3_enc(1000, lineMaxPower, "");
-	Line1S3Cross(stdPower, "stop");
+	Line1S3_enc(1000, zonePower, 'r', "");
+	Line1S3Cross(stdPower, 'r', "stop");
 
 	mot1_enc(200, 'b', stdPower, 'b', "");
 	while(SensorValue[S1]>BLACK)
@@ -204,7 +209,8 @@ void take_blue_ex()
 	{
 		motor[motorB]=-stdPower;
 	}
-	mot1_enc(5, 'b', stdPower, 'b', "stop");
+	stopmotor();
+	//mot1_enc(5, 'b', stdPower, 'b', "stop");
 
 	move_enc(280, stdPower, 'b', "stop");
 	wait1Msec(50);
@@ -224,24 +230,25 @@ void take_blue_ex()
 	while(SensorValue[S3] > BLACK)
 		moving(stdPower, 'b');
 	stopmotor();
-	povright(stdPower, "cross");
+	move_enc(CROSS_ENC-3, stdPower, 'f', "stop");
+	povright(stdPower, "");
 	bricksInRobot[0] = -1;
 	bricksInRobot[2] = -1;
 }
 
 void approachToBlue()
 {
-	LineCross(stdPower, "");
-	Line_enc(70, stdPower, "stop");
+	Line1S3Cross(stdPower, 'l', "");
+	Line1S3_enc(70, stdPower, 'l', "stop");
 	mot1_enc(ONEMOTORTURN, 'b', stdPower, 'f', "stop");
 }
 
 void takeBlueZone()
 {
 	nMotorEncoder[motorB]=0;
-	Line1S1_enc(50, stdPower, "");
-	Line1S1_enc(150, zonePower, "");
-	Line1S1White(stdPower, "stop");
+	Line1S1_enc(50, stdPower, 'l', "");
+	Line1S1_enc(150, zonePower, 'l', "");
+	Line1S1White(stdPower, 'l', "stop");
 	turn90(stdPower, 'l', "stop");
 	bricksInRobot[3] = 0;
 	startTask(zahvatM);
@@ -284,19 +291,14 @@ void take_ex_and_blue()
 	writeDebugStreamLine("Time after dom1: %d", time1[T1] / 1000);
 
 	if(check_yellow_ex())
-	{
 		take_yellow_ex();
-	}
 
 	else if(check_green_ex())
-	{
 		take_green_ex();
-	}
 
 	else
-	{
 		take_blue_ex();
-	}
+
 	writeDebugStreamLine("Time after excess: %d", time1[T1] / 1000);
 
 	approachToBlue();
@@ -311,7 +313,7 @@ void approachToGreen()
 	{
 		povright(stdPower,"cross");
 		LineCross(stdPower,"");
-		Line_enc(250,stdPower,"stop");
+		Line_enc(275,stdPower,"stop");
 		turn90(stdPower, 'r', "stop");
 		while (SensorValue[S2]>(WHITE-20))
 			moving('b',stdPower);
@@ -321,8 +323,9 @@ void approachToGreen()
 	{
 		povleftSpec(stdPower);
 		Line1Cross(stdPower,"stop");
-		move_enc(50,stdPower,'f',"stop");
+		move_enc(CROSS_ENC,stdPower,'f',"stop");
 		mot1_enc(ONEMOTORTURN,'c',stdPower,'b', "stop");
+	  move_enc(CROSS_ENC,stdPower,'f',"stop");
 	}
 }
 
@@ -330,10 +333,10 @@ void takeGreenZone()
 {
 	hapuga('g');
 	wait1Msec(500);
-	move_enc(90, stdPower,'f',"stop");
+	move_enc(70, stdPower,'f',"stop");
 	motor[motorA] = -15;
 	wait10Msec(30);
-	move_enc(50, stdPower,'b',"stop");
+	move_enc(70, stdPower,'b',"stop");
 	motor[motorA] = 0;
 	povright(stdPower,"");
 	//LineCross(stdPower,"stop");
@@ -344,6 +347,7 @@ void takeGreenZone()
 	wait1Msec(500);
 	move_enc(100, stdPower,'b',"stop");
 	motor[motorD] = -25;
+	mot1_enc(250,'b',stdPower,'f',"stop");
 	while(SensorValue[S2]>BLACK)
 		motor[motorB]=stdPower;
 	stopmotor();
@@ -354,8 +358,7 @@ void takeGreenZone()
 
 void takeYellowZone()
 {
-	Line_enc(50, stdPower, "");
-	Line_enc(350, lineMaxPower, "");
+	Line_enc(275, lineMaxPower, "");
 	LineCross(stdPower, "");
 	povleft(stdPower, "cross");
 	Line_enc(75, stdPower, "");
@@ -368,7 +371,7 @@ void takeYellowZone()
 	hapuga('m');
 	startTask(hapugaC);
 	wait1Msec(100);
-	move_enc(110, zonePower, 'b', "stop");
+	move_enc(130-15, zonePower, 'b', "stop");
 	povright(stdPower, "");
 
 	Line_enc(50, stdPower, "");
@@ -385,7 +388,7 @@ void takeYellowZone()
 	zahvat('m');
 	startTask(zahvatC);
 	wait1Msec(100);
-	move_enc(125, lineMaxPower, 'f', "stop");
+	move_enc(175, lineMaxPower, 'f', "stop");
 	turn90(stdPower, 'l', "stop");
 	move_enc(400, lineMaxPower, 'f', "");
 	fwd_black(1, zonePower, "");
