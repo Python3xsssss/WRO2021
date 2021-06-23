@@ -15,7 +15,7 @@ void stapt()
 	move_enc(100, zonePower, 'f', "");
 //	startTask(hapugaC);
 	Line1_enc(300, lineMaxPower, "");
-	Line1S1Cross(stdPower, 'r', "stop");
+	Line1S1Cross(stdPower, 'r', "");
 }
 
 void finish()
@@ -29,8 +29,8 @@ void finish()
 	LineCross(stdPower, "stop");
 	moving(lineMaxPower, 'f');
 	wait10Msec(100);
-	stopmotor();
-	move_enc(35, stdPower, 'b', "stop");
+	motorStop();
+	move_enc(10, stdPower, 'b', "stop");
 }
 
 void mainProgram()
@@ -58,8 +58,7 @@ void mainProgram()
 	writeDebugStreamLine("Time after second allocation: %d", time1[T1] / 1000);
 	finish();
 	writeDebugStreamLine("Time: %d seconds", time1[T1] / 1000);
-	while(true)
-		wait10Msec(100);
+	while(true) {}
 }
 
 task main()
@@ -67,11 +66,9 @@ task main()
 	/*!!NE ZABIVAY INIT!!*/
 	init();
 	//startTask(hapugaC);
-//	startTask(zahvatC);
+	//startTask(zahvatC);
 	wait1Msec(1500);
 	clearTimer(T1);
 	clearDebugStream();
 	mainProgram();
-//	approachToBlue();
-	takeBlueZone();
 }

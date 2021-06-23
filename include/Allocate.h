@@ -36,7 +36,7 @@ void akkumGB()
 		moving(stdPower, 'b');
 	while(SensorValue[S1]>BLACK)
 		moving(stdPower, 'b');
-	stopmotor();
+	motorStop();
 
 	akkum_gb = 1;
 	bricksInRobot[3] = -2;
@@ -49,7 +49,7 @@ void akkum_std()
 		while(SensorValue[S1]>BLACK)
 			moving(stdPower, 'b');
 	}
-	stopmotor();
+	motorStop();
 
 	zahvat('o');
 	motor[motorD] = (bricksInRobot[3] > -2) ? -25 : -75;
@@ -64,7 +64,7 @@ void put_akkum ()
 	if (bricksInRobot[3] != -2 && nInds[bricksInRobot[3]] != 2)
 		akkumGB();
 
-	if (bricksInRobot[2] == -1 || (bricksInRobot[3] != -2 && nInds[bricksInRobot[2]] != 2))
+	if (bricksInRobot[2] == -1 || (bricksInRobot[2] != -2 && nInds[bricksInRobot[2]] != 2))
 		akkum_std();
 
 	akkum_gb = 0;
@@ -76,9 +76,8 @@ void checkDom(short dom)
 	Line_enc(212,stdPower,"stop");
 	turn90(stdPower, 'r', "stop");
 	indDoms[dom][0] = check_ind(FWD_PASS1, stdPower, dom);
-	stopmotor();
 	indDoms[dom][1] = check_ind(FWD_PASS2, stdPower, dom);
-	stopmotor();
+	motorStop();
 	move_enc(FWD_PASS1+FWD_PASS2, zonePower, 'b', "stop");
 }
 
@@ -153,25 +152,27 @@ void put(short hapuga1, short hapuga2, short zahvat1, short zahvat2, short dom, 
 {
 	if (hapuga1)
 	{
-		hapuga('o');
+    startTask(hapugaO);
 		nMotorEncoder[motorB]=0;
-		LineRed(stdPower, "");
+		LineRed(stdPower, "stop");
 		move_enc(65, stdPower, 'b', "stop");
 		bricksInRobot[0] = -2;
 	}
 	if (hapuga2)
 	{
 		startTask(hapugaM);
-		nMotorEncoder[motorB]=0;
-		LineRed(stdPower, "");
+		LineRed(stdPower, "stop");
 		wait1Msec(400);
 		bricksInRobot[1] = -2;
-		move_enc(100, stdPower, 'b', "stop");
+		move_enc(140, stdPower, 'b', "stop");
 	}
+	if((zahvat1 || zahvat2) && !hapuga1 && !hapuga2 && !ifBack && dom != 1 && (indDoms[dom][0] != -1 || indDoms[dom][1] != -1))
+		Line_enc(212, stdPower, "stop");
+
 	if (zahvat1)
 	{
 		if (!hapuga1 && !hapuga2 && !ifBack)
-			stopmotor();
+			motorStop();
 		if (!ifBack)
 		{
 			if (dom == 0) // mb uzhe ne nado
@@ -179,18 +180,18 @@ void put(short hapuga1, short hapuga2, short zahvat1, short zahvat2, short dom, 
 			else
 				turn180(stdPower, 'l', "stop");
 
-			if(hapuga2)
-				move_enc(60, stdPower, 'b', "");
+			if (hapuga2)
+				move_enc(75, stdPower, 'b', "");
 		}
-		//if(!hapuga2)
-		//{
-		//	startTask(zahvatO);
-		//	wait1Msec(1000);
-		//}
-		//else
-		//{
-		zahvat('o');
-		//}
+		if(!hapuga2)
+		{
+			startTask(zahvatO);
+			wait1Msec(500);
+		}
+		else
+		{
+			zahvat('o');
+		}
 		move_enc(200,stdPower,'b',"stop");
 		move_enc(200,stdPower,'f',"");
 		bricksInRobot[2] = -2;
@@ -198,27 +199,24 @@ void put(short hapuga1, short hapuga2, short zahvat1, short zahvat2, short dom, 
 	if (zahvat2)
 	{
 		if (!hapuga1 && !hapuga2 && !zahvat1 && !ifBack)
-			stopmotor();
+			motorStop();
 		if (!zahvat1 && !ifBack)
 		{
 			if (dom == 0) // mb uzhe ne nado
-				povright(stdPower,"");
+				turn180(stdPower,'r',"stop");
 			else
-				povleft(stdPower,"");
-
-			if(hapuga2)
-			{
-				move_enc(60, stdPower, 'b', "");
-			}
+			  turn180(stdPower,'l',"stop");
+			if (hapuga2)
+				move_enc(75, stdPower, 'b', "");
 		}
 		if (zahvat1)
-			stopmotor();
+			motorStop();
 		zahvat('m');
 		//if (zahvat1)
 		//	wait10Msec(250);
 		wait1Msec(300);
-		move_enc(70,stdPower,'b',"stop");
-		move_enc(70,stdPower,'f',"stop");
+		move_enc(105,stdPower,'b',"stop");
+		move_enc(105,stdPower,'f',"stop");
 		bricksInRobot[3] = -2;
 	}
 	if (!zahvat1 && !zahvat2 && !ifBack)
@@ -292,7 +290,7 @@ void putInDom(short hapuga1, short hapuga2, short zahvat1, short zahvat2, short 
 		finalRazvoz[dom][i] = 0;
 
 	if (dom == 1)
-		Line_enc(375, lineMaxPower, "");
+		Line_enc(600, lineMaxPower, "");
 
 	LineCross(stdPower, "");
 }
