@@ -3,20 +3,18 @@
 #ifndef TESTLIB_H
 #define TESTLIB_H
 
-#define TURNL 254
+#define TURNL 247
 #define TURNR 252
-#define TURNAROUND 500
+#define TURNAROUNDL 498
+#define TURNAROUNDR 504
 #define ONEMOTORTURN 505
-#define CROSS_ENC 74
-#define POV_DIFF 9
-#define LINE_POV_DIFF 8
-#define SPEC_CROSS_L 35
-#define SPEC_CROSS_R 250
+#define CROSS_ENC 76
+#define POV_DIFF 5
+#define SPEC_CROSS_L 27
+#define SPEC_CROSS_R 150
 #define ZAHVATG 95
 #define HAPUGAG 95
 #define BEFORE_CROSS 225
-
-//#define LINETOLINE 200
 
 short pauseCounter = 0;
 short location, old_location; // location: 0-6 - T-crosses, 7 - accumulator, 8 - from blue zone, 9 - from yellow zone
@@ -118,7 +116,7 @@ void Line1S3(short speed, char side)
 {
 	k1 = 0.2; k2 = 10;
 	static float eold, e, u;
-	e = (side == 'r') ? SensorValue[S3]-GREY : GREY-SensorValue[S1];
+	e = (side == 'r') ? SensorValue[S3]-GREY : GREY-SensorValue[S3];
 	u=k1*e+k2*(e-eold);
 	eold=e;
 	float kmotB = 1.03, kmotC = 0.97;
@@ -330,6 +328,7 @@ void tormoz(float speed, char dir)
 
 	motor[motorB] = 0;
 	motor[motorC] = 0;
+	wait1Msec(100);
 }
 
 void razgon(short speed, char dir, int nEnc)
@@ -413,6 +412,26 @@ void turn90(short speed, char dir, const string ifStop)
 		razgon(speed, dir, (TURNL + TURNR)/2);
 
 	while(nMotorEncoder[motorB] < TURNL - 30*decrease && nMotorEncoder[motorC] > -TURNR + 30*decrease)
+		moving(speed, dir);
+
+	if(ifStop == "stop" || ifStop == "Stop" || ifStop == "STOP")
+		tormoz(speed, dir);
+}
+
+void turn180(short speed, char dir, const string ifStop)
+{
+	nMotorEncoder[motorB] = 0;
+	nMotorEncoder[motorC] = 0;
+
+	if((ifStop == "stop" || ifStop == "Stop" || ifStop == "STOP") /*&& dir != 'r' && dir != 'l'*/)
+		decrease = 1;
+	else
+		decrease = 0;
+
+	if(motor[motorB] == 0 && motor[motorC] == 0)
+		razgon(speed, dir, (TURNL + TURNR)/2);
+
+	while(nMotorEncoder[motorB] < TURNAROUNDL - 30*decrease && nMotorEncoder[motorC] > -TURNAROUNDR + 30*decrease)
 		moving(speed, dir);
 
 	if(ifStop == "stop" || ifStop == "Stop" || ifStop == "STOP")
@@ -698,7 +717,7 @@ int check_ind(int nEnc, short speed, short dom)
 				//if(blue_count == 2)
 				col = 0;
 			}
-			else if (cosine(greenInd, colorSensor) > 0.912)
+			else if (cosine(greenInd, colorSensor) > 0.93)
 			{
 				playSoundFile("Green");
 				writeDebugStreamLine("ret: %d, get: %d, bet: %d", greenInd.red, greenInd.green, greenInd.blue);
@@ -797,7 +816,7 @@ void hapuga(char dir)
 	if(dir == 'o' && hap != 2)
 	{
 		motor[motorA]=speed;
-		wait10Msec((2000 + (1800 * ((hap + 1)%2)) - sgn(bricksInRobot[1] + 2)*600)/speed);
+		wait10Msec((2100 + (2000 * ((hap + 1)%2)) - sgn(bricksInRobot[1] + 2)*900)/speed);
 		hap = 2;
 	}
 
@@ -854,7 +873,7 @@ void zahvat(char dir)
 	if(dir == 'o' && zahvatPos != 2)
 	{
 		motor[motorD]=speed;
-		wait10Msec((2000 + (1800 * ((zahvatPos + 1)%2)) - sgn(bricksInRobot[3] + 2)*600)/speed);
+		wait10Msec((2100 + (2000*((zahvatPos + 1)%2) - sgn(bricksInRobot[3] + 2)*900)/speed));
 		zahvatPos = 2;
 	}
 

@@ -31,11 +31,13 @@ void akkumGB()
 	zahvat('m');
 	move_enc(100, stdPower,'f', "stop");
 	zahvat('c');
+
 	while(SensorValue[S1]<WHITE)
 		moving(stdPower, 'b');
 	while(SensorValue[S1]>BLACK)
 		moving(stdPower, 'b');
 	stopmotor();
+
 	akkum_gb = 1;
 	bricksInRobot[3] = -2;
 }
@@ -48,10 +50,12 @@ void akkum_std()
 			moving(stdPower, 'b');
 	}
 	stopmotor();
+
 	zahvat('o');
-	motor[motorD] = -25 - sgn(bricksInRobot[3] + 2)*55;
+	motor[motorD] = (bricksInRobot[3] > -2) ? -25 : -75;
 	wait10Msec(200);
 	zahvatPos = 0;
+
 	bricksInRobot[2] = -2;
 }
 
@@ -145,26 +149,24 @@ void calcDom(short dom)
 	}
 }
 
-void put (short hapuga1, short hapuga2, short zahvat1, short zahvat2, short dom, bool ifBack)
+void put(short hapuga1, short hapuga2, short zahvat1, short zahvat2, short dom, bool ifBack)
 {
 	if (hapuga1)
 	{
 		hapuga('o');
 		nMotorEncoder[motorB]=0;
 		LineRed(stdPower, "");
-		int enc = nMotorEncoder[motorB];
-		move_enc(65, stdPower, 'f', "stop");
-		move_enc(enc + 65, stdPower, 'b', "stop");
+		move_enc(65, stdPower, 'b', "stop");
 		bricksInRobot[0] = -2;
 	}
 	if (hapuga2)
 	{
 		startTask(hapugaM);
 		nMotorEncoder[motorB]=0;
-		Line_enc(30, stdPower, "stop");
+		LineRed(stdPower, "");
 		wait1Msec(400);
-		move_enc(30, stdPower,'b',"stop");
 		bricksInRobot[1] = -2;
+		move_enc(100, stdPower, 'b', "stop");
 	}
 	if (zahvat1)
 	{
@@ -173,15 +175,12 @@ void put (short hapuga1, short hapuga2, short zahvat1, short zahvat2, short dom,
 		if (!ifBack)
 		{
 			if (dom == 0) // mb uzhe ne nado
-			{
-			 	turn90(stdPower, 'r', "");
-				turn90(stdPower, 'r', "stop");
-			}
+				turn180(stdPower, 'r', "stop");
 			else
-			{
-				turn90(stdPower, 'l', "");
-				turn90(stdPower, 'l', "stop");
-			}
+				turn180(stdPower, 'l', "stop");
+
+			if(hapuga2)
+				move_enc(60, stdPower, 'b', "");
 		}
 		//if(!hapuga2)
 		//{
@@ -206,6 +205,11 @@ void put (short hapuga1, short hapuga2, short zahvat1, short zahvat2, short dom,
 				povright(stdPower,"");
 			else
 				povleft(stdPower,"");
+
+			if(hapuga2)
+			{
+				move_enc(60, stdPower, 'b', "");
+			}
 		}
 		if (zahvat1)
 			stopmotor();
@@ -220,15 +224,9 @@ void put (short hapuga1, short hapuga2, short zahvat1, short zahvat2, short dom,
 	if (!zahvat1 && !zahvat2 && !ifBack)
 	{
 		if (dom == 0) // mb uzhe ne nado
-		{
-			turn90(stdPower, 'r', "");
-			turn90(stdPower, 'r', "stop");
-		}
+			turn180(stdPower, 'r', "stop");
 		else
-		{
-      turn90(stdPower, 'l', "");
-   	 	turn90(stdPower, 'l', "stop");
-   	}
+			turn180(stdPower, 'l', "stop");
 	}
 
 	startTask(hapugaC);
@@ -245,26 +243,25 @@ void putInDom(short hapuga1, short hapuga2, short zahvat1, short zahvat2, short 
 	if (location == 8)
 	{
 		if (bricksInRobot[1] == indDoms[1][0] || bricksInRobot[1] == indDoms[1][1] || bricksInRobot[0] == indDoms[1][0] || bricksInRobot[0] == indDoms[1][1])
-		{
 			povleft(stdPower, "");
-		}
+
 		else
 		{
-   		povright(stdPower, "");
-   		Line_enc(50, stdPower,"");
-      Line_enc(350, zonePower,"");
-      LineCross(stdPower,"stop");
-      location = 4;
-      return;
+			povright(stdPower, "");
+			Line_enc(50, stdPower,"");
+			Line_enc(350, zonePower,"");
+			LineCross(stdPower,"stop");
+			location = 4;
+			return;
 		}
 	}
 	//
 	if(indDoms[dom][0] == -1 && indDoms[dom][1] == -1) // body of this IF - to the function
 	{
-		  checkDom(dom);
-			calcDom(dom);
-			hapuga1 = finalRazvoz[dom][0]; hapuga2 = finalRazvoz[dom][1];
-			zahvat1 = finalRazvoz[dom][2]; zahvat2 = finalRazvoz[dom][3];
+		checkDom(dom);
+		calcDom(dom);
+		hapuga1 = finalRazvoz[dom][0]; hapuga2 = finalRazvoz[dom][1];
+		zahvat1 = finalRazvoz[dom][2]; zahvat2 = finalRazvoz[dom][3];
 		if(!hapuga1 && !hapuga2)
 		{
 			povright(stdPower, "");
@@ -286,14 +283,12 @@ void putInDom(short hapuga1, short hapuga2, short zahvat1, short zahvat2, short 
 
 		if (hapuga1)
 			startTask(hapugaO);
-
-		Line_enc(180, stdPower, "");
 	}
 
-//sama vigruzka
-  put (hapuga1, hapuga2, zahvat1, zahvat2, dom, ifBack);
+	//sama vigruzka
+	put(hapuga1, hapuga2, zahvat1, zahvat2, dom, ifBack);
 
-  for (int i = 0; i < 4; i++)
+	for (int i = 0; i < 4; i++)
 		finalRazvoz[dom][i] = 0;
 
 	if (dom == 1)

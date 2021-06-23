@@ -3,10 +3,10 @@
 #ifndef CHECK_H
 #define CHECK_H
 
-#define DOM1PASS1 92
-#define DOM1PASS2 60
-#define BACK_PASS1 285
-#define BACK_PASS2 220
+#define DOM1PASS1 200
+#define DOM1PASS2 66
+#define BACK_PASS1 265
+#define BACK_PASS2 230
 
 
 task checkY()
@@ -80,8 +80,10 @@ variable = (smth == true) ? a : b;
 
 void checkDom1()
 {
-	move_enc(290, stdPower, 'f', "stop");
+	move_enc(250, stdPower, 'f', "stop");
 	turn90(stdPower, 'r', "stop");
+	moving (stdPower, 'f' );
+	wait1Msec(750);
 	indDoms[0][0] = check_ind(DOM1PASS1, 20, 0);
 	indDoms[0][1] = check_ind(DOM1PASS2, stdPower, 0);
 	stopmotor();
@@ -91,8 +93,7 @@ void checkDom1()
 	move_enc(TURNR-100, zonePower, 'r', "");
 	while(SensorValue[S3] > BLACK)
 		moving(stdPower, 'r');
-	move_enc(77, stdPower, 'r', "stop");
-	wait10Msec(150);
+	move_enc(65, stdPower, 'r', "stop");
 	startTask(hapugaO);
 }
 
@@ -141,8 +142,7 @@ void take_yellow_ex()
 	startTask(hapugaC);
 	wait1Msec(75);
 	move_enc(70, stdPower, 'b', "stop");
-	turn90(stdPower, 'r', "");
-	turn90(stdPower, 'r', "stop");
+	turn180(stdPower, 'r', "stop");
 	move_enc(260, stdPower, 'b', "stop");
 	wait10Msec(5);
 	zahvat('m');
@@ -179,8 +179,7 @@ void take_green_ex()
 	startTask(hapugaC);
 	wait1Msec(75);
 	move_enc(50, stdPower, 'b', "stop");
-	turn90(stdPower, 'l', "");
-	turn90(stdPower, 'l', "stop");
+	turn180(stdPower, 'l', "stop");
 	move_enc(250, stdPower, 'b', "stop");
 	zahvat('m');
 	startTask(zahvatC);
@@ -219,8 +218,7 @@ void take_blue_ex()
 	startTask(zahvatC);
 	wait1Msec(75);
 	move_enc(40, stdPower, 'f', "stop");
-	turn90(stdPower, 'l', "");
-	turn90(stdPower, 'l', "stop");
+	turn180(stdPower, 'l', "stop");
 	move_enc(275, stdPower, 'f', "stop");
 	hapuga('m');
 	startTask(hapugaC);
@@ -239,10 +237,12 @@ void take_blue_ex()
 void approachToBlue()
 {
 	Line1S3Cross(stdPower, 'l', "");
-	Line1S3_enc(70, stdPower, 'l', "stop");
-	mot1_enc(ONEMOTORTURN, 'b', stdPower, 'f', "stop");
+	Line1S3_enc(85, stdPower, 'l', "stop");
+	mot1_enc(ONEMOTORTURN-125, 'b', stdPower, 'f', "");
+	while(SensorValue[S1] > BLACK)
+		motor[motorB] = 25;
+	mot1_enc(62, 'b', stdPower, 'f', "stop");
 }
-
 void takeBlueZone()
 {
 	nMotorEncoder[motorB]=0;
@@ -262,7 +262,7 @@ void takeBlueZone()
 	fwd_white(1, zonePower, "");
 	fwd_black(1, zonePower, "");
 
-	move_enc(272, zonePower, 'f', "stop");
+	move_enc(265, zonePower, 'f', "stop");
 	turn90(stdPower, 'r', "stop");
 
 	bricksInRobot[1] = 0;
@@ -287,7 +287,6 @@ void takeBlueZone()
 
 void take_ex_and_blue()
 {
-	checkDom1();
 	writeDebugStreamLine("Time after dom1: %d", time1[T1] / 1000);
 
 	if(check_yellow_ex())
@@ -347,12 +346,12 @@ void takeGreenZone()
 	wait1Msec(500);
 	move_enc(100, stdPower,'b',"stop");
 	motor[motorD] = -25;
-	mot1_enc(250,'b',stdPower,'f',"stop");
+	mot1_enc(250, 'b', stdPower, 'f', "");
 	while(SensorValue[S2]>BLACK)
 		motor[motorB]=stdPower;
 	stopmotor();
 	motor[motorD] = 0;
-	mot1_enc(350,'c',stdPower,'f',"stop");
+	mot1_enc(365, 'c', stdPower, 'f', "stop");
 	bricksInRobot[1] = 1; bricksInRobot[3] = 1;
 }
 
@@ -370,8 +369,8 @@ void takeYellowZone()
 	move_enc(130, stdPower, 'f', "stop");
 	hapuga('m');
 	startTask(hapugaC);
-	wait1Msec(100);
-	move_enc(130-15, zonePower, 'b', "stop");
+	wait1Msec(800);
+	move_enc(130-18, zonePower, 'b', "stop");
 	povright(stdPower, "");
 
 	Line_enc(50, stdPower, "");
@@ -387,7 +386,7 @@ void takeYellowZone()
 
 	zahvat('m');
 	startTask(zahvatC);
-	wait1Msec(100);
+	wait1Msec(800);
 	move_enc(175, lineMaxPower, 'f', "stop");
 	turn90(stdPower, 'l', "stop");
 	move_enc(400, lineMaxPower, 'f', "");

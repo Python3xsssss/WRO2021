@@ -13,7 +13,7 @@ void stapt()
 {
 	move_enc(50, stdPower, 'f', "");
 	move_enc(100, zonePower, 'f', "");
-	startTask(hapugaC);
+//	startTask(hapugaC);
 	Line1_enc(300, lineMaxPower, "");
 	Line1S1Cross(stdPower, 'r', "stop");
 }
@@ -31,16 +31,12 @@ void finish()
 	wait10Msec(100);
 	stopmotor();
 	move_enc(35, stdPower, 'b', "stop");
-
-	while(true)
-	{
-		wait10Msec(100);
-	}
 }
 
 void mainProgram()
 {
 	stapt();
+	checkDom1();
 	take_ex_and_blue();
 	//indDoms[0][0] = 1;
 	//indDoms[0][1] = 0;
@@ -61,6 +57,9 @@ void mainProgram()
 	allocation(1);
 	writeDebugStreamLine("Time after second allocation: %d", time1[T1] / 1000);
 	finish();
+	writeDebugStreamLine("Time: %d seconds", time1[T1] / 1000);
+	while(true)
+		wait10Msec(100);
 }
 
 task main()
@@ -68,10 +67,11 @@ task main()
 	/*!!NE ZABIVAY INIT!!*/
 	init();
 	//startTask(hapugaC);
-	//startTask(zahvatC);
+//	startTask(zahvatC);
 	wait1Msec(1500);
 	clearTimer(T1);
 	clearDebugStream();
 	mainProgram();
-  writeDebugStreamLine("Time: %d seconds", time1[T1] / 1000);
+//	approachToBlue();
+	takeBlueZone();
 }
